@@ -7,81 +7,115 @@
 
 @layer base {
   :root {
-    /* Premium modern color palette - cool grays with accent blues */
-    --background: 250 251 252; /* Pure cool white */
-    --foreground: 15 23 42; /* Rich dark slate */
+    /* Modern Professional Color Palette - All HSL values */
+    --background: 240 10% 98%;
+    --foreground: 240 10% 8%;
+    --card: 240 10% 100%;
+    --card-foreground: 240 10% 8%;
+    --popover: 240 10% 100%;
+    --popover-foreground: 240 10% 8%;
+    
+    /* Primary - Deep Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 91% 55%;
+    --primary-light: 217 91% 95%;
+    
+    /* Secondary - Cool Gray */
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --secondary-hover: 240 5% 92%;
+    
+    /* Accent - Emerald Green */
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 160 84% 95%;
+    
+    /* Muted Colors */
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    
+    /* Border & Input */
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 217 91% 60%;
+    
+    /* Status Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Chart Colors */
+    --chart-1: 217 91% 60%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 14 91% 60%;
 
-    --card: 255 255 255;
-    --card-foreground: 15 23 42;
-
-    --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
-
-    /* Premium primary - calming professional blue */
-    --primary: 37 99 235; /* blue-600 */
-    --primary-foreground: 255 255 255;
-
-    /* Soft secondary - minimal gray */
-    --secondary: 248 250 252; /* slate-50 */
-    --secondary-foreground: 30 41 59; /* slate-700 */
-
-    --muted: 241 245 249; /* slate-100 */
-    --muted-foreground: 100 116 139; /* slate-500 */
-
-    /* Accent - calming teal for highlights */
-    --accent: 240 253 250; /* emerald-50 */
-    --accent-foreground: 6 78 59; /* emerald-800 */
-
-    --destructive: 239 68 68; /* red-500 */
-    --destructive-foreground: 255 255 255;
-
-    --border: 226 232 240; /* slate-200 */
-    --input: 248 250 252; /* slate-50 */
-    --ring: 37 99 235; /* blue-600 */
-
-    --radius: 0.75rem; /* More refined radius */
-
-    /* Health-specific modern colors */
-    --health-good: 16 185 129; /* emerald-500 */
-    --health-warning: 245 158 11; /* amber-500 */
-    --health-danger: 239 68 68; /* red-500 */
-    --medicine-blue: 59 130 246; /* blue-500 */
-    --calm-purple: 139 92 246; /* violet-500 */
-
+    --radius: 0.75rem;
+    
+    /* Health-specific colors */
+    --health-good: 142 76% 36%;
+    --health-warning: 38 92% 50%;
+    --health-danger: 0 84% 60%;
+    --medicine-blue: 217 91% 60%;
+    --calm-purple: 280 65% 60%;
+    
     /* Premium gradients */
-    --gradient-primary: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-    --gradient-secondary: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
-    --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(240 5% 96%), hsl(240 5% 92%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 32%));
   }
 
   .dark {
-    --background: 2 6 23; /* Very dark blue-gray */
-    --foreground: 248 250 252;
-
-    --card: 15 23 42;
-    --card-foreground: 248 250 252;
-
-    --popover: 15 23 42;
-    --popover-foreground: 248 250 252;
-
-    --primary: 59 130 246; /* blue-500 */
-    --primary-foreground: 15 23 42;
-
-    --secondary: 30 41 59;
-    --secondary-foreground: 248 250 252;
-
-    --muted: 30 41 59;
-    --muted-foreground: 148 163 184;
-
-    --accent: 30 41 59;
-    --accent-foreground: 248 250 252;
-
-    --destructive: 239 68 68;
-    --destructive-foreground: 248 250 252;
-
-    --border: 30 41 59;
-    --input: 30 41 59;
-    --ring: 59 130 246;
+    --background: 240 10% 4%;
+    --foreground: 240 5% 95%;
+    --card: 240 10% 6%;
+    --card-foreground: 240 5% 95%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 240 5% 95%;
+    
+    --primary: 217 91% 65%;
+    --primary-foreground: 240 10% 4%;
+    --primary-hover: 217 91% 70%;
+    --primary-light: 217 91% 15%;
+    
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 240 5% 85%;
+    --secondary-hover: 240 4% 20%;
+    
+    --accent: 160 84% 45%;
+    --accent-foreground: 240 10% 4%;
+    --accent-light: 160 84% 15%;
+    
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 217 91% 65%;
+    
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 240 5% 95%;
+    --success: 142 70% 45%;
+    --success-foreground: 240 5% 95%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 240 10% 4%;
+    
+    --chart-1: 217 91% 65%;
+    --chart-2: 160 84% 45%;
+    --chart-3: 38 92% 55%;
+    --chart-4: 280 65% 65%;
+    --chart-5: 14 91% 65%;
+    
+    --health-good: 142 70% 45%;
+    --health-warning: 38 92% 55%;
+    --health-danger: 0 75% 60%;
+    --medicine-blue: 217 91% 65%;
+    --calm-purple: 280 65% 65%;
   }
 }
 
@@ -167,15 +201,15 @@
 
   /* Health status colors with modern approach */
   .status-good {
-    @apply text-emerald-600 bg-emerald-50 border-emerald-200;
+    @apply text-success bg-success/10 border-success/20;
   }
   
   .status-warning {
-    @apply text-amber-600 bg-amber-50 border-amber-200;
+    @apply text-warning bg-warning/10 border-warning/20;
   }
   
   .status-danger {
-    @apply text-red-600 bg-red-50 border-red-200;
+    @apply text-destructive bg-destructive/10 border-destructive/20;
   }
 
   /* Interactive states */
