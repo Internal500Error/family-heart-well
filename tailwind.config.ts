@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'inter': ['Inter', 'sans-serif'],
+				'poppins': ['Poppins', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,7 +66,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// DilCare specific colors
+				'health-good': 'hsl(var(--health-good))',
+				'health-warning': 'hsl(var(--health-warning))',
+				'health-danger': 'hsl(var(--health-danger))',
+				'medicine': 'hsl(var(--medicine-blue))',
+				'calm': 'hsl(var(--calm-purple))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +95,40 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'gentle-bounce': {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-8px)'
+					}
+				},
+				'heart-beat': {
+					'0%, 100%': {
+						transform: 'scale(1)'
+					},
+					'50%': {
+						transform: 'scale(1.1)'
+					}
+				},
+				'fade-in-up': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'gentle-bounce': 'gentle-bounce 2s ease-in-out infinite',
+				'heart-beat': 'heart-beat 1.5s ease-in-out infinite',
+				'fade-in-up': 'fade-in-up 0.6s ease-out forwards'
 			}
 		}
 	},

@@ -1,96 +1,82 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* DilCare Design System - Warm, loving colors and fonts for elderly users */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core warm color palette */
+    --background: 254 252 251; /* warm white */
+    --foreground: 41 37 36; /* warm dark brown */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 255 255 255;
+    --card-foreground: 41 37 36;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 255 255 255;
+    --popover-foreground: 41 37 36;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Warm primary - sunset orange */
+    --primary: 249 115 22; /* orange-500 */
+    --primary-foreground: 255 255 255;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Soft secondary - gentle peach */
+    --secondary: 254 242 242; /* rose-50 */
+    --secondary-foreground: 159 18 57; /* rose-800 */
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 250 247 245; /* warm gray-50 */
+    --muted-foreground: 120 113 108; /* warm gray-500 */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Loving accent - warm pink */
+    --accent: 251 207 232; /* pink-200 */
+    --accent-foreground: 131 24 67; /* pink-900 */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 220 38 38; /* red-600 */
+    --destructive-foreground: 254 242 242; /* red-50 */
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 231 229 228; /* stone-200 */
+    --input: 245 245 244; /* stone-100 */
+    --ring: 249 115 22; /* orange-500 */
 
-    --radius: 0.5rem;
+    --radius: 1rem; /* More rounded for friendlier feel */
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Health-specific colors */
+    --health-good: 34 197 94; /* green-500 */
+    --health-warning: 251 191 36; /* amber-400 */
+    --health-danger: 239 68 68; /* red-500 */
+    --medicine-blue: 59 130 246; /* blue-500 */
+    --calm-purple: 139 92 246; /* violet-500 */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 28 25 23; /* stone-900 */
+    --foreground: 250 247 245; /* stone-50 */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 41 37 36; /* stone-800 */
+    --card-foreground: 250 247 245;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 41 37 36;
+    --popover-foreground: 250 247 245;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 251 146 60; /* orange-400 - lighter for dark mode */
+    --primary-foreground: 28 25 23;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 68 64 60; /* stone-700 */
+    --secondary-foreground: 250 247 245;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 68 64 60;
+    --muted-foreground: 168 162 158; /* stone-400 */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 68 64 60;
+    --accent-foreground: 250 247 245;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 239 68 68;
+    --destructive-foreground: 250 247 245;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 68 64 60;
+    --input: 68 64 60;
+    --ring: 251 146 60;
   }
 }
 
@@ -100,6 +86,135 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
+
+  /* Enhanced typography for elderly users */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-semibold;
+  }
+
+  /* Large, accessible touch targets */
+  button, [role="button"] {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* High contrast focus states */
+  :focus-visible {
+    @apply ring-4 ring-primary/50 ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  /* Custom font families */
+  .font-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .font-poppins {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  /* Gentle animations */
+  .animate-gentle-bounce {
+    animation: gentle-bounce 2s ease-in-out infinite;
+  }
+
+  .animate-heart-beat {
+    animation: heart-beat 1.5s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  /* Health status colors */
+  .text-health-good {
+    color: hsl(var(--health-good));
+  }
+  
+  .text-health-warning {
+    color: hsl(var(--health-warning));
+  }
+  
+  .text-health-danger {
+    color: hsl(var(--health-danger));
+  }
+
+  .bg-health-good {
+    background-color: hsl(var(--health-good));
+  }
+  
+  .bg-health-warning {
+    background-color: hsl(var(--health-warning));
+  }
+  
+  .bg-health-danger {
+    background-color: hsl(var(--health-danger));
+  }
+
+  /* Medicine and wellness colors */
+  .text-medicine {
+    color: hsl(var(--medicine-blue));
+  }
+  
+  .text-calm {
+    color: hsl(var(--calm-purple));
+  }
+
+  .bg-medicine {
+    background-color: hsl(var(--medicine-blue));
+  }
+  
+  .bg-calm {
+    background-color: hsl(var(--calm-purple));
+  }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes heart-beat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced scrollbars for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
 }
