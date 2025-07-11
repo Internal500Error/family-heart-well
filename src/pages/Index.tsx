@@ -5,14 +5,16 @@ import {
   Pill, 
   Activity, 
   BookOpen, 
-  AlertTriangle,
+  Shield,
   Bot,
   Stethoscope,
   User,
   Sun,
   Moon,
   Sunrise,
-  MessageCircleHeart
+  Sparkles,
+  ArrowRight,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,98 +22,133 @@ import { NavLink } from 'react-router-dom';
 
 const Index = () => {
   const currentHour = new Date().getHours();
-  const userName = "Papa"; // This would come from user profile
+  const userName = "Dr. Sharma"; // More professional
   
   const getGreetingIcon = () => {
     if (currentHour < 12) return <Sunrise className="h-6 w-6 text-amber-500" />;
-    if (currentHour < 17) return <Sun className="h-6 w-6 text-yellow-500" />;
+    if (currentHour < 17) return <Sun className="h-6 w-6 text-orange-500" />;
     return <Moon className="h-6 w-6 text-blue-500" />;
   };
 
   const getGreeting = () => {
-    if (currentHour < 12) return `Good Morning, ${userName}!`;
-    if (currentHour < 17) return `Good Afternoon, ${userName}!`;
-    return `Good Evening, ${userName}!`;
+    if (currentHour < 12) return `Good Morning, ${userName}`;
+    if (currentHour < 17) return `Good Afternoon, ${userName}`;
+    return `Good Evening, ${userName}`;
   };
 
   const quickActions = [
     {
       path: '/medicine',
       icon: Pill,
-      label: 'Medicine',
-      description: 'Reminders & Tracker',
-      color: 'bg-medicine text-white',
-      badge: '2 due'
+      label: 'Medications',
+      description: 'Smart Reminders',
+      gradient: 'from-blue-500 to-blue-600',
+      badge: '2 due',
+      bgColor: 'bg-blue-50',
+      iconColor: 'text-blue-600'
     },
     {
       path: '/health',
       icon: Activity,
-      label: 'Health',
-      description: 'Track Vitals',
-      color: 'bg-health-good text-white',
-      badge: null
+      label: 'Health Metrics',
+      description: 'Track Progress',
+      gradient: 'from-emerald-500 to-emerald-600',
+      badge: null,
+      bgColor: 'bg-emerald-50',
+      iconColor: 'text-emerald-600'
     },
     {
       path: '/sos',
-      icon: AlertTriangle,
-      label: 'SOS',
-      description: 'Emergency Help',
-      color: 'bg-health-danger text-white',
-      badge: null
+      icon: Shield,
+      label: 'Emergency',
+      description: 'Instant Help',
+      gradient: 'from-red-500 to-red-600',
+      badge: null,
+      bgColor: 'bg-red-50',
+      iconColor: 'text-red-600'
     },
     {
       path: '/gyaan',
       icon: BookOpen,
-      label: 'Gyaan',
-      description: 'Health Tips',
-      color: 'bg-calm text-white',
-      badge: 'New tip'
+      label: 'Wellness',
+      description: 'Expert Tips',
+      gradient: 'from-purple-500 to-purple-600',
+      badge: '3 new',
+      bgColor: 'bg-purple-50',
+      iconColor: 'text-purple-600'
     }
   ];
 
-  const todaysTip = "नमस्ते! Today's tip: Start your morning with warm water and lemon. It helps with digestion and keeps you hydrated! 🍋";
-  const dailyQuote = "Every day is a new beginning. Take a deep breath, smile, and start again. Your children love you! 💕";
+  const healthStats = [
+    { label: 'Steps Today', value: '8,432', trend: '+12%', icon: TrendingUp, color: 'text-emerald-600' },
+    { label: 'Heart Rate', value: '78 BPM', trend: 'Normal', icon: Heart, color: 'text-blue-600' },
+  ];
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* Greeting Section */}
-      <Card className="bg-gradient-to-r from-primary/10 to-accent/20 border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-3 mb-3">
-            {getGreetingIcon()}
-            <h1 className="text-2xl font-poppins font-semibold text-foreground">
-              {getGreeting()}
-            </h1>
+    <div className="space-y-8 animate-slide-up">
+      {/* Premium Greeting Section */}
+      <Card className="glass border-0 shadow-premium interactive-card overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
+        <CardContent className="p-8 relative">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              {getGreetingIcon()}
+              <div>
+                <h1 className="text-2xl font-display font-bold text-foreground">
+                  {getGreeting()}
+                </h1>
+                <p className="text-muted-foreground font-medium">
+                  Your health companion is ready
+                </p>
+              </div>
+            </div>
+            <div className="animate-float">
+              <Sparkles className="h-8 w-8 text-primary/60" />
+            </div>
           </div>
-          <p className="text-muted-foreground">
-            How are you feeling today? Remember to take care of yourself! 
-          </p>
-          <div className="flex items-center mt-4 space-x-2">
-            <Heart className="h-4 w-4 text-primary animate-heart-beat" />
-            <span className="text-sm text-primary font-medium">Sending love your way</span>
+          
+          {/* Quick health overview */}
+          <div className="grid grid-cols-2 gap-4">
+            {healthStats.map((stat, index) => (
+              <div key={index} className="bg-white/50 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-2">
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
+                </div>
+                <div className="text-lg font-bold text-foreground">{stat.value}</div>
+                <p className={`text-xs ${stat.color} font-medium`}>{stat.trend}</p>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Quick Actions Grid */}
+      {/* Premium Quick Actions Grid */}
       <div>
-        <h2 className="text-lg font-poppins font-semibold mb-4 text-foreground">
-          Quick Actions
-        </h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-display font-bold text-foreground">
+            Quick Actions
+          </h2>
+          <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
+            View All <ArrowRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+        
         <div className="grid grid-cols-2 gap-4">
-          {quickActions.map(({ path, icon: Icon, label, description, color, badge }) => (
+          {quickActions.map(({ path, icon: Icon, label, description, gradient, badge, bgColor, iconColor }) => (
             <NavLink key={path} to={path}>
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105">
-                <CardContent className="p-4">
-                  <div className={`${color} rounded-2xl p-3 mb-3 w-fit relative`}>
-                    <Icon className="h-6 w-6" />
+              <Card className="glass border-0 shadow-premium interactive-card h-full overflow-hidden">
+                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5`} />
+                <CardContent className="p-6 relative">
+                  <div className={`${bgColor} rounded-2xl p-4 mb-4 w-fit relative`}>
+                    <Icon className={`h-6 w-6 ${iconColor}`} />
                     {badge && (
-                      <div className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-1 rounded-full">
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-primary to-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium shadow-lg">
                         {badge}
                       </div>
                     )}
                   </div>
-                  <h3 className="font-semibold text-foreground mb-1">{label}</h3>
+                  <h3 className="font-display font-bold text-foreground mb-1">{label}</h3>
                   <p className="text-sm text-muted-foreground">{description}</p>
                 </CardContent>
               </Card>
@@ -120,68 +157,58 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Today's Health Tip */}
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-health-good/20">
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <div className="bg-health-good/20 rounded-full p-2">
-              <BookOpen className="h-5 w-5 text-health-good" />
+      {/* Premium Today's Insight */}
+      <Card className="glass border-0 shadow-premium">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 rounded-lg" />
+        <CardContent className="p-6 relative">
+          <div className="flex items-start space-x-4">
+            <div className="bg-emerald-50 rounded-2xl p-3">
+              <BookOpen className="h-6 w-6 text-emerald-600" />
             </div>
-            <div>
-              <h3 className="font-semibold text-health-good mb-2">Today's Health Tip</h3>
-              <p className="text-sm text-foreground leading-relaxed">{todaysTip}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Daily Quote */}
-      <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <div className="bg-primary/20 rounded-full p-2">
-              <MessageCircleHeart className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-primary mb-2">Daily Love Note</h3>
-              <p className="text-sm text-foreground leading-relaxed italic">{dailyQuote}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-3 text-xs border-primary/30 hover:bg-primary/10"
-              >
-                Share with family ❤️
+            <div className="flex-1">
+              <h3 className="font-display font-bold text-emerald-700 mb-3">Today's Health Insight</h3>
+              <p className="text-sm text-foreground leading-relaxed mb-4">
+                Your morning walk routine is showing excellent consistency! Keep maintaining 30 minutes of daily activity for optimal cardiovascular health.
+              </p>
+              <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-lg">
+                Learn More
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* More Options */}
+      {/* Premium Secondary Actions */}
       <div className="grid grid-cols-3 gap-3">
         <NavLink to="/ai">
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-3 text-center">
-              <Bot className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <p className="text-xs font-medium">AI Assistant</p>
+          <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="bg-primary/10 rounded-xl p-3 mx-auto mb-3 w-fit">
+                <Bot className="h-6 w-6 text-primary mx-auto" />
+              </div>
+              <p className="text-xs font-medium text-foreground">AI Assistant</p>
             </CardContent>
           </Card>
         </NavLink>
         
         <NavLink to="/doctor">
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-3 text-center">
-              <Stethoscope className="h-6 w-6 mx-auto mb-2 text-medicine" />
-              <p className="text-xs font-medium">Doctor</p>
+          <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="bg-medicine/10 rounded-xl p-3 mx-auto mb-3 w-fit">
+                <Stethoscope className="h-6 w-6 text-medicine mx-auto" />
+              </div>
+              <p className="text-xs font-medium text-foreground">Doctors</p>
             </CardContent>
           </Card>
         </NavLink>
         
         <NavLink to="/profile">
-          <Card className="hover:shadow-md transition-all duration-200">
-            <CardContent className="p-3 text-center">
-              <User className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-xs font-medium">Profile</p>
+          <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
+            <CardContent className="p-4 text-center">
+              <div className="bg-muted/50 rounded-xl p-3 mx-auto mb-3 w-fit">
+                <User className="h-6 w-6 text-muted-foreground mx-auto" />
+              </div>
+              <p className="text-xs font-medium text-foreground">Profile</p>
             </CardContent>
           </Card>
         </NavLink>

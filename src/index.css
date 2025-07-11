@@ -3,80 +3,85 @@
 @tailwind components;
 @tailwind utilities;
 
-/* DilCare Design System - Warm, loving colors and fonts for elderly users */
+/* DilCare Design System - Modern, Premium, Professional & Calming */
 
 @layer base {
   :root {
-    /* Core warm color palette */
-    --background: 254 252 251; /* warm white */
-    --foreground: 41 37 36; /* warm dark brown */
+    /* Premium modern color palette - cool grays with accent blues */
+    --background: 250 251 252; /* Pure cool white */
+    --foreground: 15 23 42; /* Rich dark slate */
 
     --card: 255 255 255;
-    --card-foreground: 41 37 36;
+    --card-foreground: 15 23 42;
 
     --popover: 255 255 255;
-    --popover-foreground: 41 37 36;
+    --popover-foreground: 15 23 42;
 
-    /* Warm primary - sunset orange */
-    --primary: 249 115 22; /* orange-500 */
+    /* Premium primary - calming professional blue */
+    --primary: 37 99 235; /* blue-600 */
     --primary-foreground: 255 255 255;
 
-    /* Soft secondary - gentle peach */
-    --secondary: 254 242 242; /* rose-50 */
-    --secondary-foreground: 159 18 57; /* rose-800 */
+    /* Soft secondary - minimal gray */
+    --secondary: 248 250 252; /* slate-50 */
+    --secondary-foreground: 30 41 59; /* slate-700 */
 
-    --muted: 250 247 245; /* warm gray-50 */
-    --muted-foreground: 120 113 108; /* warm gray-500 */
+    --muted: 241 245 249; /* slate-100 */
+    --muted-foreground: 100 116 139; /* slate-500 */
 
-    /* Loving accent - warm pink */
-    --accent: 251 207 232; /* pink-200 */
-    --accent-foreground: 131 24 67; /* pink-900 */
+    /* Accent - calming teal for highlights */
+    --accent: 240 253 250; /* emerald-50 */
+    --accent-foreground: 6 78 59; /* emerald-800 */
 
-    --destructive: 220 38 38; /* red-600 */
-    --destructive-foreground: 254 242 242; /* red-50 */
+    --destructive: 239 68 68; /* red-500 */
+    --destructive-foreground: 255 255 255;
 
-    --border: 231 229 228; /* stone-200 */
-    --input: 245 245 244; /* stone-100 */
-    --ring: 249 115 22; /* orange-500 */
+    --border: 226 232 240; /* slate-200 */
+    --input: 248 250 252; /* slate-50 */
+    --ring: 37 99 235; /* blue-600 */
 
-    --radius: 1rem; /* More rounded for friendlier feel */
+    --radius: 0.75rem; /* More refined radius */
 
-    /* Health-specific colors */
-    --health-good: 34 197 94; /* green-500 */
-    --health-warning: 251 191 36; /* amber-400 */
+    /* Health-specific modern colors */
+    --health-good: 16 185 129; /* emerald-500 */
+    --health-warning: 245 158 11; /* amber-500 */
     --health-danger: 239 68 68; /* red-500 */
     --medicine-blue: 59 130 246; /* blue-500 */
     --calm-purple: 139 92 246; /* violet-500 */
+
+    /* Premium gradients */
+    --gradient-primary: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+    --gradient-secondary: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+    --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
   }
 
   .dark {
-    --background: 28 25 23; /* stone-900 */
-    --foreground: 250 247 245; /* stone-50 */
+    --background: 2 6 23; /* Very dark blue-gray */
+    --foreground: 248 250 252;
 
-    --card: 41 37 36; /* stone-800 */
-    --card-foreground: 250 247 245;
+    --card: 15 23 42;
+    --card-foreground: 248 250 252;
 
-    --popover: 41 37 36;
-    --popover-foreground: 250 247 245;
+    --popover: 15 23 42;
+    --popover-foreground: 248 250 252;
 
-    --primary: 251 146 60; /* orange-400 - lighter for dark mode */
-    --primary-foreground: 28 25 23;
+    --primary: 59 130 246; /* blue-500 */
+    --primary-foreground: 15 23 42;
 
-    --secondary: 68 64 60; /* stone-700 */
-    --secondary-foreground: 250 247 245;
+    --secondary: 30 41 59;
+    --secondary-foreground: 248 250 252;
 
-    --muted: 68 64 60;
-    --muted-foreground: 168 162 158; /* stone-400 */
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
 
-    --accent: 68 64 60;
-    --accent-foreground: 250 247 245;
+    --accent: 30 41 59;
+    --accent-foreground: 248 250 252;
 
     --destructive: 239 68 68;
-    --destructive-foreground: 250 247 245;
+    --destructive-foreground: 248 250 252;
 
-    --border: 68 64 60;
-    --input: 68 64 60;
-    --ring: 251 146 60;
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 59 130 246;
   }
 }
 
@@ -86,135 +91,164 @@
   }
 
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground font-inter antialiased;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Enhanced typography for elderly users */
+  /* Premium typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-poppins font-semibold;
+    @apply font-inter font-semibold tracking-tight;
   }
 
-  /* Large, accessible touch targets */
+  h1 { @apply text-3xl md:text-4xl; }
+  h2 { @apply text-2xl md:text-3xl; }
+  h3 { @apply text-xl md:text-2xl; }
+  h4 { @apply text-lg md:text-xl; }
+
+  /* Enhanced touch targets for accessibility */
   button, [role="button"] {
-    @apply min-h-[48px] min-w-[48px];
+    @apply min-h-[44px] min-w-[44px];
   }
 
-  /* High contrast focus states */
+  /* Premium focus states */
   :focus-visible {
-    @apply ring-4 ring-primary/50 ring-offset-2 ring-offset-background;
+    @apply ring-2 ring-primary/20 ring-offset-2 ring-offset-background outline-none;
   }
 }
 
 @layer utilities {
-  /* Custom font families */
-  .font-inter {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Premium gradient utilities */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
   }
   
-  .font-poppins {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-
-  /* Gentle animations */
-  .animate-gentle-bounce {
-    animation: gentle-bounce 2s ease-in-out infinite;
-  }
-
-  .animate-heart-beat {
-    animation: heart-beat 1.5s ease-in-out infinite;
-  }
-
-  .animate-fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
-  }
-
-  /* Health status colors */
-  .text-health-good {
-    color: hsl(var(--health-good));
+  .bg-gradient-secondary {
+    background: var(--gradient-secondary);
   }
   
-  .text-health-warning {
-    color: hsl(var(--health-warning));
-  }
-  
-  .text-health-danger {
-    color: hsl(var(--health-danger));
+  .bg-gradient-success {
+    background: var(--gradient-success);
   }
 
-  .bg-health-good {
-    background-color: hsl(var(--health-good));
-  }
-  
-  .bg-health-warning {
-    background-color: hsl(var(--health-warning));
-  }
-  
-  .bg-health-danger {
-    background-color: hsl(var(--health-danger));
+  /* Glass morphism effects */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl;
   }
 
-  /* Medicine and wellness colors */
-  .text-medicine {
-    color: hsl(var(--medicine-blue));
-  }
-  
-  .text-calm {
-    color: hsl(var(--calm-purple));
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-xl border border-slate-700/20 shadow-xl;
   }
 
-  .bg-medicine {
-    background-color: hsl(var(--medicine-blue));
+  /* Premium shadows */
+  .shadow-premium {
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  .shadow-premium-lg {
+    box-shadow: 0 16px 64px rgba(15, 23, 42, 0.12);
+  }
+
+  /* Modern animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 3s ease-in-out infinite;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.3s ease-out;
+  }
+
+  /* Health status colors with modern approach */
+  .status-good {
+    @apply text-emerald-600 bg-emerald-50 border-emerald-200;
   }
   
-  .bg-calm {
-    background-color: hsl(var(--calm-purple));
+  .status-warning {
+    @apply text-amber-600 bg-amber-50 border-amber-200;
+  }
+  
+  .status-danger {
+    @apply text-red-600 bg-red-50 border-red-200;
+  }
+
+  /* Interactive states */
+  .interactive {
+    @apply transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .interactive-card {
+    @apply transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-1;
   }
 }
 
-@keyframes gentle-bounce {
+/* Premium keyframes */
+@keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0px);
   }
   50% {
     transform: translateY(-8px);
   }
 }
 
-@keyframes heart-beat {
+@keyframes pulse-soft {
   0%, 100% {
-    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.1);
+    opacity: 0.8;
   }
 }
 
-@keyframes fade-in-up {
+@keyframes scale-in {
   0% {
     opacity: 0;
-    transform: translateY(20px);
+    transform: scale(0.9);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: scale(1);
   }
 }
 
-/* Enhanced scrollbars for better UX */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary));
-  border-radius: 4px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.8);
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Premium loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }

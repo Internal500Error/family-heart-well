@@ -13,15 +13,15 @@ export default {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: '1rem',
 			screens: {
 				'2xl': '1400px'
 			}
 		},
 		extend: {
 			fontFamily: {
-				'inter': ['Inter', 'sans-serif'],
-				'poppins': ['Poppins', 'sans-serif'],
+				'inter': ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+				'display': ['Inter', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -57,17 +57,7 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				},
-				// DilCare specific colors
+				// Premium health colors
 				'health-good': 'hsl(var(--health-good))',
 				'health-warning': 'hsl(var(--health-warning))',
 				'health-danger': 'hsl(var(--health-danger))',
@@ -96,23 +86,17 @@ export default {
 						height: '0'
 					}
 				},
-				'gentle-bounce': {
-					'0%, 100%': {
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
 						transform: 'translateY(0)'
-					},
-					'50%': {
-						transform: 'translateY(-8px)'
 					}
 				},
-				'heart-beat': {
-					'0%, 100%': {
-						transform: 'scale(1)'
-					},
-					'50%': {
-						transform: 'scale(1.1)'
-					}
-				},
-				'fade-in-up': {
+				'slide-up': {
 					'0%': {
 						opacity: '0',
 						transform: 'translateY(20px)'
@@ -121,14 +105,53 @@ export default {
 						opacity: '1',
 						transform: 'translateY(0)'
 					}
+				},
+				'scale-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'scale(0.95)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-8px)'
+					}
+				},
+				'pulse-soft': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.8'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'gentle-bounce': 'gentle-bounce 2s ease-in-out infinite',
-				'heart-beat': 'heart-beat 1.5s ease-in-out infinite',
-				'fade-in-up': 'fade-in-up 0.6s ease-out forwards'
+				'fade-in': 'fade-in 0.5s ease-out',
+				'slide-up': 'slide-up 0.5s ease-out',
+				'scale-in': 'scale-in 0.3s ease-out',
+				'float': 'float 6s ease-in-out infinite',
+				'pulse-soft': 'pulse-soft 3s ease-in-out infinite'
+			},
+			spacing: {
+				'18': '4.5rem',
+				'22': '5.5rem',
+			},
+			backdropBlur: {
+				xs: '2px',
+			},
+			boxShadow: {
+				'premium': '0 8px 32px rgba(15, 23, 42, 0.08)',
+				'premium-lg': '0 16px 64px rgba(15, 23, 42, 0.12)',
 			}
 		}
 	},
