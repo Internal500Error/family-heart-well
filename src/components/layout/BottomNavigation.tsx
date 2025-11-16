@@ -6,12 +6,18 @@ import {
   Pill, 
   Activity, 
   BookOpen, 
-  Shield
+  Shield,
+  Footprints,
+  Scale,
+  Users
 } from 'lucide-react';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/medicine', icon: Pill, label: 'Medicine' },
+  { path: '/steps', icon: Footprints, label: 'Steps' },
+  { path: '/bmi', icon: Scale, label: 'BMI' },
+  { path: '/community', icon: Users, label: 'Community' },
   { path: '/health', icon: Activity, label: 'Health' },
   { path: '/gyaan', icon: BookOpen, label: 'Wellness' },
   { path: '/sos', icon: Shield, label: 'Emergency' },

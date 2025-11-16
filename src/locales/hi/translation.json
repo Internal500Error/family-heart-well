@@ -1,0 +1,15 @@
+{
+  "welcome": "DilCare में आपका स्वागत है!",
+  "health_tips": "स्वास्थ्य सुझाव",
+  "medicine_reminder": "दवा अनुस्मारक",
+  "profile": "प्रोफ़ाइल",
+  "doctor_section": "डॉक्टर अनुभाग",
+  "step_tracker": "कदम ट्रैकर",
+  "water_tracker": "पानी ट्रैकर",
+  "bmi_calculator": "बीएमआई कैलकुलेटर",
+  "sos_emergency": "एसओएस आपातकालीन",
+  "ai_assistant": "एआई स्वास्थ्य सहायक",
+  "gyaan_corner": "ज्ञान कॉर्नर",
+  "settings": "सेटिंग्स",
+  "logout": "लॉगआउट"
+}

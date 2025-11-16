@@ -17,3 +17,5 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+//Mobile functionality ready codes

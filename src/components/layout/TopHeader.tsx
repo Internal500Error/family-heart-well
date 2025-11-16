@@ -16,7 +16,7 @@ export const TopHeader: React.FC = () => {
               <Menu className="h-5 w-5 text-muted-foreground" />
             </Button>
             <div>
-              <h1 className="text-xl font-display font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-xl font-display font-bold bg-gradient bg-clip-text text-transparent">
                 DilCare
               </h1>
               <p className="text-xs text-muted-foreground font-medium">

@@ -1,0 +1,15 @@
+{
+  "welcome": "DilCare-ലേക്ക് സ്വാഗതം!",
+  "health_tips": "ആരോഗ്യ നിർദ്ദേശങ്ങൾ",
+  "medicine_reminder": "മരുന്ന് ഓർമ്മപ്പെടുത്തൽ",
+  "profile": "പ്രൊഫൈൽ",
+  "doctor_section": "ഡോക്ടർ വിഭാഗം",
+  "step_tracker": "കാൽനട ട്രാക്കർ",
+  "water_tracker": "വെള്ളം ട്രാക്കർ",
+  "bmi_calculator": "BMI കാൽക്കുലേറ്റർ",
+  "sos_emergency": "SOS അടിയന്തര",
+  "ai_assistant": "AI ആരോഗ്യ സഹായി",
+  "gyaan_corner": "ജ്ഞാന കോർണർ",
+  "settings": "സജ്ജീകരണങ്ങൾ",
+  "logout": "ലോഗ്ഔട്ട്"
+}

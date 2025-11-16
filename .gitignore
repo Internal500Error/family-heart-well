@@ -7,18 +7,164 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.nuxt/
+.vuepress/dist
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API Keys and Sensitive Information
+.env.*.local
+config/secrets.json
+config/api-keys.json
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Health Data & User Information (Important for DilCare)
+data/user-health/
+backups/health-data/
+exports/medical-records/
+temp-health-uploads/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# Temporary folders
+tmp/
+temp/
+.tmp/
+.temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Runtime/Compiled files
+*.local
+*.tsbuildinfo
+
+# Package manager lockfiles (keep one, exclude others)
+# Keep package-lock.json or yarn.lock or pnpm-lock.yaml
+# Comment out the ones you want to keep
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Storybook build outputs
+storybook-static/
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# CDN and deployment files
+public/uploads/
+public/temp/
+
+# Health app specific exclusions
+uploads/medical-documents/
+temp-health-images/
+voice-recordings/
+health-analytics-cache/
+
+# AI model files (if any)
+models/
+*.model
+*.weights
+
+# Large asset files
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Local development
+.local/
+local-config.json
+
+# Deployment artifacts
+.deploy/
+.terraform/
+.serverless/

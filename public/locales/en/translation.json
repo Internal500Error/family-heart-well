@@ -1,0 +1,15 @@
+{
+  "welcome": "Welcome to DilCare!",
+  "health_tips": "Health Tips",
+  "medicine_reminder": "Medicine Reminder",
+  "profile": "Profile",
+  "doctor_section": "Doctor Section",
+  "step_tracker": "Step Tracker",
+  "water_tracker": "Water Tracker",
+  "bmi_calculator": "BMI Calculator",
+  "sos_emergency": "SOS Emergency",
+  "ai_assistant": "AI Health Assistant",
+  "gyaan_corner": "Gyaan Corner",
+  "settings": "Settings",
+  "logout": "Logout"
+}

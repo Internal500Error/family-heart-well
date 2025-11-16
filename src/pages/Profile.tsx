@@ -74,10 +74,10 @@ const Profile = () => {
   };
 
   const achievements = [
-    { icon: '🏆', title: 'Health Champion', description: '30 days streak!' },
-    { icon: '💊', title: 'Medicine Master', description: 'Never missed a dose' },
-    { icon: '📚', title: 'Knowledge Seeker', description: 'Read 50 health tips' },
-    { icon: '❤️', title: 'Heart Hero', description: 'BP under control' }
+    { icon: '', title: 'Health Champion', description: '30 days streak!' },
+    { icon: '', title: 'Medicine Master', description: 'Never missed a dose' },
+    { icon: '', title: 'Knowledge Seeker', description: 'Read 50 health tips' },
+    { icon: '', title: 'Heart Hero', description: 'BP under control' }
   ];
 
   return (

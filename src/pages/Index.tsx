@@ -14,7 +14,9 @@ import {
   Sunrise,
   Sparkles,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Footprints,
+  Scale
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -46,6 +48,26 @@ const Index = () => {
       badge: '2 due',
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600'
+    },
+    {
+      path: '/steps',
+      icon: Footprints,
+      label: 'Step Tracker',
+      description: 'Track Steps',
+      gradient: 'from-orange-500 to-orange-600',
+      badge: '8,432',
+      bgColor: 'bg-orange-50',
+      iconColor: 'text-orange-600'
+    },
+    {
+      path: '/bmi',
+      icon: Scale,
+      label: 'BMI Calculator',
+      description: 'Check BMI',
+      gradient: 'from-purple-500 to-purple-600',
+      badge: null,
+      bgColor: 'bg-purple-50',
+      iconColor: 'text-purple-600'
     },
     {
       path: '/health',
@@ -80,7 +102,8 @@ const Index = () => {
   ];
 
   const healthStats = [
-    { label: 'Steps Today', value: '8,432', trend: '+12%', icon: TrendingUp, color: 'text-emerald-600' },
+    { label: 'Steps Today', value: '8,432', trend: '+12%', icon: Footprints, color: 'text-orange-600' },
+    { label: 'BMI', value: '22.5', trend: 'Normal', icon: Scale, color: 'text-purple-600' },
     { label: 'Heart Rate', value: '78 BPM', trend: 'Normal', icon: Heart, color: 'text-blue-600' },
   ];
 
