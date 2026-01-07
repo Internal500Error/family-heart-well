@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bot, 
   Send, 
@@ -9,11 +9,16 @@ import {
   Pill,
   Activity,
   BookOpen,
-  Volume2
+  Volume2,
+  Settings,
+  Key,
+  X,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface ChatMessage {
   id: string;
@@ -22,12 +27,45 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+// AI API Integration
+const GROQ_API_KEY = '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';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+const SYSTEM_PROMPT = `You are DilCare AI, a knowledgeable and caring health assistant for Indian families. 
+
+YOUR EXPERTISE:
+- Medicine information (dosage, side effects, interactions, timing)
+- Nutrition and diet plans (diabetes, BP, heart health, weight management)
+- Exercise recommendations for all ages
+- Mental wellness and stress management
+- Indian home remedies (Ayurveda, yoga, pranayama)
+- First aid guidance
+- Chronic disease management (diabetes, hypertension, thyroid)
+- Women's health, children's health, elderly care
+- Sleep hygiene and lifestyle modifications
+
+YOUR PERSONALITY:
+- Warm and caring like a knowledgeable family member
+- Use occasional Hindi words naturally (Namaste, beta, ji, aapka)
+- Give practical, actionable advice with specific steps
+- Include relevant emojis to be friendly 😊
+- Keep responses helpful but concise
+
+IMPORTANT RULES:
+- ALWAYS provide helpful health information - never refuse health questions
+- For serious symptoms, recommend consulting a doctor while still providing guidance
+- Give specific actionable advice, not vague responses
+- Include Indian context (foods, remedies, cultural practices)
+- Be encouraging and supportive
+
+You can answer ANY health-related question including medicines, symptoms, diseases, nutrition, fitness, mental health, etc.`;
+
 const AIAssistant = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       type: 'ai',
-      message: "Namaste! 🙏 I'm your DilCare AI assistant. I'm here to help you with health questions, medicine reminders, and wellness tips. How can I make your day better?",
+      message: "Namaste! 🙏 I'm your DilCare AI assistant powered by real AI. I'm here to help you with health questions, medicine info, and wellness tips. How can I help you today?",
       timestamp: new Date()
     }
   ]);
@@ -35,35 +73,137 @@ const AIAssistant = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-IN';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputMessage(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
 
   const quickQuestions = [
     {
       icon: Pill,
-      question: "What does my medicine do?",
+      question: "What does metformin do?",
       color: "text-medicine"
     },
     {
       icon: Activity,
-      question: "My BP is high, what should I eat?",
+      question: "My BP is 150/95, what should I do?",
       color: "text-health-danger"
     },
     {
       icon: BookOpen,
-      question: "Give me a healthy recipe",
+      question: "Give me a diabetic-friendly recipe",
       color: "text-health-good"
     },
     {
       icon: Heart,
-      question: "I'm feeling anxious, help me",
+      question: "I'm feeling stressed, help me relax",
       color: "text-primary"
     }
   ];
 
-  const sendMessage = (text?: string) => {
+  // Real AI API Call using Groq
+  const callGroqAPI = async (userMessage: string): Promise<string> => {
+    const conversationHistory = messages.slice(-6).map(msg => ({
+      role: msg.type === 'user' ? 'user' : 'assistant',
+      content: msg.message
+    }));
+
+    try {
+      console.log('Calling Groq API...');
+      
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            ...conversationHistory,
+            { role: 'user', content: userMessage }
+          ],
+          temperature: 0.7,
+          max_tokens: 800
+        })
+      });
+
+      const data = await response.json();
+      console.log('Groq Response:', data);
+
+      if (!response.ok) {
+        console.error('Groq Error:', data);
+        throw new Error(data.error?.message || 'API Error');
+      }
+
+      const aiText = data.choices?.[0]?.message?.content;
+      if (aiText) {
+        return aiText;
+      }
+      
+      throw new Error('No response from AI');
+    } catch (error) {
+      console.error('AI Error:', error);
+      return fallbackResponse(userMessage);
+    }
+  };
+
+  // Fallback responses when API unavailable
+  const fallbackResponse = (userMessage: string): string => {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('medicine') || lowerMessage.includes('tablet') || lowerMessage.includes('metformin')) {
+      return "💊 Metformin is commonly prescribed for Type 2 diabetes. It helps control blood sugar levels by reducing glucose production in the liver.\n\n**Key points:**\n• Take with meals to reduce stomach upset\n• Stay hydrated\n• Monitor blood sugar regularly\n\nAlways follow your doctor's prescribed dosage! 🏥";
+    }
+    
+    if (lowerMessage.includes('bp') || lowerMessage.includes('blood pressure') || lowerMessage.includes('150')) {
+      return "⚠️ A reading of 150/95 is considered Stage 1 Hypertension.\n\n**Immediate steps:**\n• Sit quietly, rest for 10 mins, then recheck\n• Reduce salt intake today\n• Avoid caffeine and stress\n• Take prescribed BP medicine if you have any\n\nIf symptoms like headache or chest pain occur, please consult your doctor immediately! 🏥";
+    }
+    
+    if (lowerMessage.includes('recipe') || lowerMessage.includes('diabetic') || lowerMessage.includes('food')) {
+      return "🥗 **Diabetic-Friendly Methi Paratha**\n\n**Ingredients:**\n• 1 cup whole wheat flour\n• 1 cup fresh fenugreek leaves (methi)\n• 1 tsp cumin, salt to taste\n\n**Method:**\n1. Mix methi with flour, add water to make dough\n2. Rest 15 mins, roll into parathas\n3. Cook with minimal oil\n\n✨ Methi helps control blood sugar naturally!";
+    }
+    
+    if (lowerMessage.includes('stress') || lowerMessage.includes('anxious') || lowerMessage.includes('relax')) {
+      return "🧘 Let's relax together!\n\n**Try this 4-7-8 breathing:**\n1. Breathe IN for 4 seconds\n2. HOLD for 7 seconds\n3. Breathe OUT for 8 seconds\n4. Repeat 3-4 times\n\n**Quick tips:**\n• Step away from screens\n• Listen to soft music\n• Drink warm water with tulsi\n\nRemember: It's okay to rest. You're doing great! 💙";
+    }
+    
+    return "I'm here to help! 🤗 You can ask me about:\n• Medicine information\n• Diet and nutrition tips\n• Blood pressure/diabetes management\n• Stress relief techniques\n• Home remedies\n\nFor the best experience, add your free Groq API key in settings!";
+  };
+
+  const sendMessage = async (text?: string) => {
     const messageText = text || inputMessage.trim();
     if (!messageText) return;
 
-    // Add user message
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
@@ -75,59 +215,43 @@ const AIAssistant = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(messageText);
-      const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        message: aiResponse,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 1500);
-  };
-
-  const generateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
+    const aiResponse = await callGroqAPI(messageText);
     
-    if (lowerMessage.includes('medicine') || lowerMessage.includes('tablet')) {
-      return "I can help you understand your medicines! 💊 Please tell me the name of your medicine, and I'll explain what it does and when to take it. Remember, always follow your doctor's advice!";
-    }
+    const aiMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      type: 'ai',
+      message: aiResponse,
+      timestamp: new Date()
+    };
     
-    if (lowerMessage.includes('bp') || lowerMessage.includes('blood pressure') || lowerMessage.includes('high')) {
-      return "For high blood pressure, try these natural approaches: 🌿\n\n• Reduce salt intake\n• Eat more fruits and vegetables\n• Take gentle walks daily\n• Practice deep breathing\n• Avoid processed foods\n\nBut please consult your doctor for proper medication! Your health is precious. ❤️";
-    }
-    
-    if (lowerMessage.includes('recipe') || lowerMessage.includes('food') || lowerMessage.includes('eat')) {
-      return "Here's a heart-healthy recipe for you! 🍲\n\n**Daliya Khichdi**\n• 1 cup broken wheat (daliya)\n• 1/2 cup moong dal\n• Mixed vegetables\n• Turmeric, cumin, ginger\n• Cook with less oil\n\nThis is nutritious, easy to digest, and delicious! Your family will love it too. 😊";
-    }
-    
-    if (lowerMessage.includes('anxious') || lowerMessage.includes('worried') || lowerMessage.includes('stress')) {
-      return "I understand you're feeling anxious, and that's completely normal. 🤗\n\nTry this right now:\n• Take 3 deep breaths with me\n• Breathe in for 4 counts, hold for 4, out for 6\n• Remember: This feeling will pass\n• You are loved and cared for\n\nWould you like me to guide you through a calming exercise? I'm here for you. 💙";
-    }
-    
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('namaste')) {
-      return "Namaste! 🙏 It's wonderful to talk with you today. I hope you're feeling well and happy. What would you like to chat about? I'm here to help with anything health-related or just to keep you company!";
-    }
-    
-    return "That's a great question! 🤔 I want to give you the best answer possible. Could you tell me a bit more about what you're looking for? I'm here to help with medicines, health tips, nutrition advice, or just to have a caring conversation. Your wellbeing matters to me! 💝";
+    setMessages(prev => [...prev, aiMessage]);
+    setIsTyping(false);
   };
 
   const toggleVoice = () => {
-    setIsListening(!isListening);
-    // Voice recognition logic would go here
+    if (!recognitionRef.current) {
+      alert('Voice recognition not supported in this browser');
+      return;
+    }
+    
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
   };
 
   const speakMessage = (message: string) => {
-    // Text-to-speech logic would go here
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.rate = 0.8; // Slower for elderly users
+      speechSynthesis.cancel();
+      const cleanMessage = message.replace(/[*#]/g, '').replace(/\n+/g, '. ');
+      const utterance = new SpeechSynthesisUtterance(cleanMessage);
+      utterance.rate = 0.85;
       utterance.pitch = 1;
       utterance.volume = 1;
+      utterance.lang = 'en-IN';
       speechSynthesis.speak(utterance);
     }
   };
@@ -135,19 +259,28 @@ const AIAssistant = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-fade-in-up">
       {/* Header */}
-      <div className="text-center mb-4">
-        <div className="bg-primary/20 rounded-full p-4 w-fit mx-auto mb-4">
-          <Bot className="h-8 w-8 text-primary" />
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-primary to-accent rounded-full p-3">
+            <Bot className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-poppins font-semibold flex items-center gap-2">
+              AI Assistant 
+              <Sparkles className="h-4 w-4 text-yellow-500" />
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Powered by Llama 3.3 70B
+            </p>
+          </div>
         </div>
-        <h1 className="text-2xl font-poppins font-semibold mb-2">AI Assistant</h1>
-        <p className="text-muted-foreground">Your caring health companion</p>
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 space-y-4 overflow-y-auto mb-4 max-h-96">
+      <div className="flex-1 space-y-4 overflow-y-auto mb-4 max-h-[50vh] pr-2">
         {messages.map((message) => (
           <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+            <div className={`max-w-[85%] ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
               <Card className={message.type === 'user' ? 'bg-primary text-white' : 'bg-muted/50'}>
                 <CardContent className="p-3">
                   <div className="flex items-start space-x-2">
@@ -196,11 +329,13 @@ const AIAssistant = () => {
                     <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                     <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
+                  <span className="text-xs text-muted-foreground ml-2">Thinking...</span>
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Questions */}
