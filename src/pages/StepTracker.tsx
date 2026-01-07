@@ -45,6 +45,8 @@ const StepTracker: React.FC = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [showGoalSetter, setShowGoalSetter] = useState(false);
   const [newGoal, setNewGoal] = useState(10000);
+  const [manualSteps, setManualSteps] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
   
   const stepTracker = EnhancedStepTrackerService.getInstance();
 
@@ -146,6 +148,39 @@ const StepTracker: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const addManualSteps = () => {
+    const steps = parseInt(manualSteps);
+    if (!steps || steps < 0) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const storedData = localStorage.getItem(`steps_${today}`);
+    const currentSteps = storedData ? JSON.parse(storedData).steps : 0;
+    
+    const newStepData = {
+      steps: currentSteps + steps,
+      timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem(`steps_${today}`, JSON.stringify(newStepData));
+    setManualSteps('');
+    setShowManualInput(false);
+    initializeStepTracker();
+  };
+
+  const updateSteps = (increment: boolean) => {
+    const today = new Date().toISOString().split('T')[0];
+    const storedData = localStorage.getItem(`steps_${today}`);
+    const currentSteps = storedData ? JSON.parse(storedData).steps : 0;
+    
+    const newStepData = {
+      steps: Math.max(0, currentSteps + (increment ? 100 : -100)),
+      timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem(`steps_${today}`, JSON.stringify(newStepData));
+    initializeStepTracker();
   };
 
   const updateGoal = () => {
@@ -313,6 +348,10 @@ const StepTracker: React.FC = () => {
                 Today's Steps
               </div>
               <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" onClick={() => setShowManualInput(!showManualInput)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Steps
+                </Button>
                 <Button variant="outline" size="sm" onClick={refreshData}>
                   <RefreshCw className="h-4 w-4 mr-1" />
                   Refresh
@@ -322,6 +361,32 @@ const StepTracker: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
+              {/* Manual Step Input */}
+              {showManualInput && (
+                <div className="p-4 bg-blue-50 rounded-lg space-y-3">
+                  <p className="text-sm font-medium">Add Steps Manually</p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Enter steps..."
+                      value={manualSteps}
+                      onChange={(e) => setManualSteps(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={addManualSteps} size="sm">Add</Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => updateSteps(false)}>
+                      <Minus className="h-4 w-4 mr-1" />
+                      -100
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => updateSteps(true)}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      +100
+                    </Button>
+                  </div>
+                </div>
+              )}
               {/* Step Counter Visual */}
               <div className="flex items-center justify-center">
                 <div className="relative w-48 h-48">

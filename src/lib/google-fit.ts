@@ -41,12 +41,11 @@ class GoogleFitService {
   private gapi: any = null;
   
   private config: GoogleFitConfig = {
-    clientId: import.meta.env.VITE_GOOGLE_FIT_CLIENT_ID || '',
+    clientId: '347374563172-domqbn61bnjjalont672l4tsup4688vp.apps.googleusercontent.com',
     scopes: [
       'https://www.googleapis.com/auth/fitness.activity.read',
       'https://www.googleapis.com/auth/fitness.body.read',
-      'https://www.googleapis.com/auth/fitness.location.read',
-      'https://www.googleapis.com/auth/fitness.sleep.read'
+      'https://www.googleapis.com/auth/fitness.location.read'
     ],
     discoveryUrl: 'https://www.googleapis.com/discovery/v1/apis/fitness/v1/rest'
   };
@@ -70,21 +69,21 @@ class GoogleFitService {
       
       // Initialize gapi
       await new Promise((resolve) => {
-        this.gapi.load('auth2:client', resolve);
+        this.gapi.load('client:auth2', resolve);
       });
 
-      // Initialize auth and client
+      // Initialize client
       await this.gapi.client.init({
         clientId: this.config.clientId,
         scope: this.config.scopes.join(' '),
-        discoveryDocs: [this.config.discoveryUrl]
+        plugin_name: 'DilCare'
       });
 
       this.isInitialized = true;
-      console.log('Google Fit API initialized successfully');
+      console.log('Google Fit API initialized');
       return true;
     } catch (error) {
-      console.error('Failed to initialize Google Fit API:', error);
+      console.error('Failed to initialize Google Fit:', error);
       return false;
     }
   }
