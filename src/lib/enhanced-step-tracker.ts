@@ -147,14 +147,21 @@ class EnhancedStepTrackerService {
    * Get data from device sensors (fallback)
    */
   private async getDeviceSensorData(): Promise<EnhancedStepData> {
-    // This would use your existing StepTrackerService logic
-    const basicData = {
-      steps: Math.floor(Math.random() * 8000) + 2000, // Mock data for demo
+    // Get data from localStorage
+    const today = new Date().toISOString().split('T')[0];
+    const storedData = localStorage.getItem(`steps_${today}`);
+    
+    let basicData = {
+      steps: 0,
       distance: 0,
       calories: 0,
       activeMinutes: 0,
       activities: []
     };
+
+    if (storedData) {
+      basicData = JSON.parse(storedData);
+    }
 
     // Calculate derived metrics
     basicData.distance = Math.round((basicData.steps * 0.75 / 1000) * 100) / 100;
@@ -189,29 +196,40 @@ class EnhancedStepTrackerService {
         return await this.googleFit.getWeeklyStepData();
       }
       
-      // Fallback to mock data for demo
-      return this.generateMockWeeklyData();
+      // Get stored data from localStorage
+      return this.getStoredWeeklyData();
     } catch (error) {
       console.error('Failed to get weekly data:', error);
-      return this.generateMockWeeklyData();
+      return this.getStoredWeeklyData();
     }
   }
 
   /**
-   * Generate mock weekly data for demo
+   * Get stored weekly data from localStorage
    */
-  private generateMockWeeklyData(): Array<{date: string, steps: number, calories: number, distance: number, activeMinutes: number}> {
+  private getStoredWeeklyData(): Array<{date: string, steps: number, calories: number, distance: number, activeMinutes: number}> {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return days.map(day => {
-      const steps = Math.floor(Math.random() * 5000) + 5000;
-      return {
-        date: day,
+    const result = [];
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const storedData = localStorage.getItem(`steps_${dateStr}`);
+      const steps = storedData ? JSON.parse(storedData).steps : 0;
+      
+      result.push({
+        date: days[date.getDay()],
         steps,
         calories: Math.round(steps * 0.045),
         distance: Math.round((steps * 0.75 / 1000) * 100) / 100,
         activeMinutes: Math.round(steps / 100)
-      };
-    });
+      });
+    }
+    
+    return result;
   }
 
   /**
