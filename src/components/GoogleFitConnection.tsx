@@ -17,6 +17,9 @@ import EnhancedStepTrackerService from '@/lib/enhanced-step-tracker';
 
 {/* =issue fixedhere*/}
 
+
+{/* =issue fixedhere*/}
+
 interface ConnectionStatus {
   googleFit: boolean;
   deviceSensors: boolean;
