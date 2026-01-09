@@ -215,7 +215,7 @@ const GoogleFitConnection: React.FC = () => {
           )}
         </div>
 
-        {/* Device Sensors Status  Hello world*/}
+        {/* Device Sensors Status hello krishna here*/}
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="h-3 w-3 rounded-full mr-3 bg-green-500" />
