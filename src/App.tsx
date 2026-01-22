@@ -18,35 +18,40 @@ import DoctorSection from "./pages/DoctorSection";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Community from "./pages/Community";
+import ChildDashboard from "./pages/ChildDashboard";
+import { UserModeProvider } from "./hooks/useUserMode";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <DilCareLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/medicine" element={<MedicineReminder />} />
-            <Route path="/health" element={<HealthTracker />} />
-            <Route path="/steps" element={<StepTracker />} />
-            <Route path="/water" element={<WaterTracker />} />
-            <Route path="/bmi" element={<BMICalculator />} />
-            <Route path="/gyaan" element={<GyaanCorner />} />
-            <Route path="/sos" element={<SOSEmergency />} />
-            <Route path="/ai" element={<AIAssistant />} />
-            <Route path="/doctor" element={<DoctorSection />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/community" element={<Community />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </DilCareLayout>
-      </BrowserRouter>
-    </TooltipProvider>
+    <UserModeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <DilCareLayout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/medicine" element={<MedicineReminder />} />
+              <Route path="/health" element={<HealthTracker />} />
+              <Route path="/steps" element={<StepTracker />} />
+              <Route path="/water" element={<WaterTracker />} />
+              <Route path="/bmi" element={<BMICalculator />} />
+              <Route path="/gyaan" element={<GyaanCorner />} />
+              <Route path="/sos" element={<SOSEmergency />} />
+              <Route path="/ai" element={<AIAssistant />} />
+              <Route path="/doctor" element={<DoctorSection />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/child-dashboard" element={<ChildDashboard />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </DilCareLayout>
+        </BrowserRouter>
+      </TooltipProvider>
+    </UserModeProvider>
   </QueryClientProvider>
 );
 
