@@ -14,7 +14,7 @@ export const TopHeader: React.FC = () => {
   const isChildDashboard = location.pathname === '/child-dashboard';
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+    <header className="topbar fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
       <div className="container mx-auto px-6 py-4 max-w-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -22,9 +22,10 @@ export const TopHeader: React.FC = () => {
               <Menu className="h-5 w-5 text-muted-foreground" />
             </Button>
             <div>
-              <h1 className="text-xl font-display font-bold bg-gradient bg-clip-text text-transparent">
-                DilCare
-              </h1>
+                  <h1 className="text-2xl font-display font-bold flex items-center gap-3 text-foreground">
+                    <img src="/assets/dilcare-heart.png.png" alt="DilCare logo" className="w-8 h-8 object-contain rounded-md" />
+                    <span className="leading-tight">DilCare</span>
+                  </h1>
               <p className="text-xs text-muted-foreground font-medium">
                 {greeting}
               </p>
@@ -64,6 +65,7 @@ export const TopHeader: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* Brand moved into the heading above the greeting to avoid layout duplication */}
     </header>
   );
 };
