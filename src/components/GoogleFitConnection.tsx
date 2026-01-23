@@ -15,6 +15,11 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import EnhancedStepTrackerService from '@/lib/enhanced-step-tracker';
 
+{/* =issue fixedhere*/}
+
+
+{/* =issue fixedhere*/}
+
 interface ConnectionStatus {
   googleFit: boolean;
   deviceSensors: boolean;
