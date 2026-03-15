@@ -19,7 +19,10 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Community from "./pages/Community";
 import ChildDashboard from "./pages/ChildDashboard";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import { UserModeProvider } from "./hooks/useUserMode";
+import FamilyLocation from "./pages/FamilyLocation";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +35,10 @@ const App = () => (
         <BrowserRouter>
           <DilCareLayout>
             <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/" element={<Index />} />
+              <Route path="/child-dashboard/location" element={<FamilyLocation />} />
               <Route path="/medicine" element={<MedicineReminder />} />
               <Route path="/health" element={<HealthTracker />} />
               <Route path="/steps" element={<StepTracker />} />

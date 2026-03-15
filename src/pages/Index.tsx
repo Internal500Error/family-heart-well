@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { 
-  Heart, 
-  Pill, 
-  Activity, 
-  BookOpen, 
+import {
+  Heart,
+  Pill,
+  Activity,
+  BookOpen,
   Shield,
   Bot,
   Stethoscope,
@@ -25,7 +25,7 @@ import { NavLink } from 'react-router-dom';
 const Index = () => {
   const currentHour = new Date().getHours();
   const userName = "Dr. Sharma"; // More professional
-  
+
   const getGreetingIcon = () => {
     if (currentHour < 12) return <Sunrise className="h-6 w-6 text-amber-500" />;
     if (currentHour < 17) return <Sun className="h-6 w-6 text-orange-500" />;
@@ -101,140 +101,173 @@ const Index = () => {
     }
   ];
 
+  const notifications = [
+    {
+      id: '1',
+      tag: 'Medicine Reminder',
+      time: '08:30 AM',
+      title: 'Time for Telma 40!',
+      message: 'Please take your blood pressure medication after breakfast.',
+      icon: Pill,
+      variant: 'blue', // Uses blue theme
+    },
+    {
+      id: '2',
+      tag: 'Lab Report',
+      time: 'Just Now',
+      title: 'Annual Checkup Results Arrived',
+      message: 'Your lipid profile report is now available for review.',
+      icon: Activity,
+      variant: 'emerald',
+      actionLabel: 'View Report',
+    },
+    {
+      id: '3',
+      tag: 'Family Update',
+      time: '2h ago',
+      title: 'Message for Papa',
+      message: 'Don\'t forget to check sugar levels today before lunch."',
+      icon: User,
+      variant: 'purple',
+      isItalic: true,
+    }
+  ];
+
   const healthStats = [
     { label: 'Steps Today', value: '8,432', trend: '+12%', icon: Footprints, color: 'text-orange-600' },
     { label: 'BMI', value: '22.5', trend: 'Normal', icon: Scale, color: 'text-purple-600' },
     { label: 'Heart Rate', value: '78 BPM', trend: 'Normal', icon: Heart, color: 'text-blue-600' },
   ];
 
-  return (
-    <div className="space-y-8 animate-slide-up">
-      {/* Premium Greeting Section */}
-      <Card className="glass border-0 shadow-premium interactive-card overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
-        <CardContent className="p-8 relative">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              {getGreetingIcon()}
-              <div>
-                <h1 className="text-2xl font-display font-bold text-foreground">
-                  {getGreeting()}
-                </h1>
-                <p className="text-muted-foreground font-medium">
-                  Your health companion is ready
-                </p>
-              </div>
-            </div>
-            <div className="animate-float">
-              <Sparkles className="h-8 w-8 text-primary/60" />
-            </div>
-          </div>
-          
-          {/* Quick health overview */}
-          <div className="grid grid-cols-2 gap-4">
-            {healthStats.map((stat, index) => (
-              <div key={index} className="bg-white/50 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2 mb-2">
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                  <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
-                </div>
-                <div className="text-lg font-bold text-foreground">{stat.value}</div>
-                <p className={`text-xs ${stat.color} font-medium`}>{stat.trend}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+  const ActionCard = ({ item }) => {
+    // Mapping variants to Tailwind classes
+    const styles = {
+      blue: { border: 'border-l-blue-500', badge: 'bg-blue-100 text-blue-700', iconBg: 'bg-blue-50', iconColor: 'text-blue-600' },
+      emerald: { border: 'border-l-emerald-500', badge: 'bg-emerald-100 text-emerald-700', iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+      purple: { border: 'border-l-purple-500', badge: 'bg-purple-100 text-purple-700', iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
+    }[item.variant] || { border: 'border-l-gray-500', badge: 'bg-gray-100 text-gray-700', iconBg: 'bg-gray-50', iconColor: 'text-gray-600' };
 
-      {/* Premium Quick Actions Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-display font-bold text-foreground">
-            Quick Actions
-          </h2>
-          <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10">
-            View All <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          {quickActions.map(({ path, icon: Icon, label, description, gradient, badge, bgColor, iconColor }) => (
-            <NavLink key={path} to={path}>
-              <Card className="glass border-0 shadow-premium interactive-card h-full overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5`} />
-                <CardContent className="p-6 relative">
-                  <div className={`${bgColor} rounded-2xl p-4 mb-4 w-fit relative`}>
-                    <Icon className={`h-6 w-6 ${iconColor}`} />
-                    {badge && (
-                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-primary to-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium shadow-lg">
-                        {badge}
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-display font-bold text-foreground mb-1">{label}</h3>
-                  <p className="text-sm text-muted-foreground">{description}</p>
-                </CardContent>
-              </Card>
-            </NavLink>
-          ))}
-        </div>
-      </div>
-
-      {/* Premium Today's Insight */}
-      <Card className="glass border-0 shadow-premium">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 rounded-lg" />
-        <CardContent className="p-6 relative">
-          <div className="flex items-start space-x-4">
-            <div className="bg-emerald-50 rounded-2xl p-3">
-              <BookOpen className="h-6 w-6 text-emerald-600" />
+    return (
+      <Card className={`glass border-0 shadow-sm border-l-4 ${styles.border} overflow-hidden transition-transform active:scale-[0.98]`}>
+        <CardContent className="p-4">
+          <div className="flex justify-between items-start mb-2">
+            <span className={`${styles.badge} text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider`}>
+              {item.tag}
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium">{item.time}</span>
+          </div>
+          <div className="flex gap-3">
+            <div className={`${styles.iconBg} p-2 rounded-lg h-fit`}>
+              <item.icon className={`h-5 w-5 ${styles.iconColor}`} />
             </div>
             <div className="flex-1">
-              <h3 className="font-display font-bold text-emerald-700 mb-3">Today's Health Insight</h3>
-              <p className="text-sm text-foreground leading-relaxed mb-4">
-                Your morning walk routine is showing excellent consistency! Keep maintaining 30 minutes of daily activity for optimal cardiovascular health.
+              <p className="text-sm font-semibold text-foreground">{item.title}</p>
+              <p className={`text-xs text-muted-foreground mt-1 ${item.isItalic ? 'italic' : ''}`}>
+                {item.message}
               </p>
-              <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-lg">
-                Learn More
-              </Button>
+              {item.actionLabel && (
+                <Button size="sm" variant="outline" className={`mt-3 h-7 text-xs border-${item.variant}-200 text-${item.variant}-700 hover:bg-${item.variant}-50`}>
+                  {item.actionLabel}
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
+    );
+  };
 
-      {/* Premium Secondary Actions */}
-      <div className="grid grid-cols-3 gap-3">
-        <NavLink to="/ai">
-          <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
-            <CardContent className="p-4 text-center">
-              <div className="bg-primary/10 rounded-xl p-3 mx-auto mb-3 w-fit">
-                <Bot className="h-6 w-6 text-primary mx-auto" />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+        {/* Premium Greeting Section */}
+        <Card className="glass border-0 shadow-premium interactive-card overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5" />
+          <CardContent className="p-8 relative">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                {getGreetingIcon()}
+                <div>
+                  <h1 className="text-2xl font-display font-bold text-foreground">
+                    {getGreeting()}
+                  </h1>
+                  <p className="text-muted-foreground font-medium">
+                    Your health companion is ready
+                  </p>
+                </div>
               </div>
-              <p className="text-xs font-medium text-foreground">AI Assistant</p>
-            </CardContent>
-          </Card>
-        </NavLink>
-        
-        <NavLink to="/doctor">
-          <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
-            <CardContent className="p-4 text-center">
-              <div className="bg-medicine/10 rounded-xl p-3 mx-auto mb-3 w-fit">
-                <Stethoscope className="h-6 w-6 text-medicine mx-auto" />
+              <div className="animate-float">
+                <Sparkles className="h-8 w-8 text-primary/60" />
               </div>
-              <p className="text-xs font-medium text-foreground">Doctors</p>
-            </CardContent>
-          </Card>
-        </NavLink>
-        
-        <NavLink to="/profile">
-          <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
-            <CardContent className="p-4 text-center">
-              <div className="bg-muted/50 rounded-xl p-3 mx-auto mb-3 w-fit">
-                <User className="h-6 w-6 text-muted-foreground mx-auto" />
-              </div>
-              <p className="text-xs font-medium text-foreground">Profile</p>
-            </CardContent>
-          </Card>
-        </NavLink>
+            </div>
+
+            {/* Quick health overview */}
+            <div className="grid grid-cols-3 gap-2">
+              {healthStats.map((stat, index) => (
+
+                <div key={index} className="bg-white/50 rounded-xl p-2 backdrop-blur-sm">
+
+                  <div className="flex items-center space-x-2 mb-2">
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                    <span className="text-xs font-medium text-muted-foreground">{stat.label}</span>
+                  </div>
+                  <div className="text-lg font-bold text-foreground">{stat.value}</div>
+                  <p className={`text-xs ${stat.color} font-medium`}>{stat.trend}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Action Feed Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-lg font-display font-bold text-foreground">Important Updates</h2>
+            <Button variant="ghost" size="sm" className="text-xs text-primary">Clear All</Button>
+          </div>
+
+          <div className="space-y-3">
+            {notifications.map((item) => (
+              <ActionCard key={item.id} item={item} />
+            ))}
+          </div>
+        </div>
+
+        {/* Premium Secondary Actions */}
+        <div className="grid grid-cols-3 gap-3">
+          <NavLink to="/ai">
+            <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-primary/10 rounded-xl p-3 mx-auto mb-3 w-fit">
+                  <Bot className="h-6 w-6 text-primary mx-auto" />
+                </div>
+                <p className="text-xs font-medium text-foreground">AI Assistant</p>
+              </CardContent>
+            </Card>
+          </NavLink>
+
+          <NavLink to="/doctor">
+            <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-medicine/10 rounded-xl p-3 mx-auto mb-3 w-fit">
+                  <Stethoscope className="h-6 w-6 text-medicine mx-auto" />
+                </div>
+                <p className="text-xs font-medium text-foreground">Doctors</p>
+              </CardContent>
+            </Card>
+          </NavLink>
+
+          <NavLink to="/profile">
+            <Card className="glass border-0 shadow-premium interactive hover:shadow-premium-lg transition-all duration-300">
+              <CardContent className="p-4 text-center">
+                <div className="bg-muted/50 rounded-xl p-3 mx-auto mb-3 w-fit">
+                  <User className="h-6 w-6 text-muted-foreground mx-auto" />
+                </div>
+                <p className="text-xs font-medium text-foreground">Profile</p>
+              </CardContent>
+            </Card>
+          </NavLink>
+        </div>
       </div>
     </div>
   );
