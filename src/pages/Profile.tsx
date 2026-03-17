@@ -123,305 +123,313 @@ const Profile = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* Header */}
-      <div className="text-center">
-        <div className="relative w-24 h-24 mx-auto mb-4">
-          <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center">
-            <User className="h-12 w-12 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+
+        {/* ── Hero avatar section ─────────────────────────────────── */}
+        <div
+          className="relative rounded-3xl overflow-hidden shadow-lg"
+          style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)' }}
+        >
+          {/* Decorative blobs */}
+          <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
+          <div className="absolute bottom-0 -left-6 w-28 h-28 rounded-full bg-white/10" />
+
+          <div className="relative px-4 py-4 flex flex-col items-center text-center">
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-24 h-24 rounded-3xl bg-white/25 border-2 border-white/40 flex items-center justify-center shadow-lg backdrop-blur-sm">
+                <User className="h-12 w-12 text-white" />
+              </div>
+              <Button
+                size="sm"
+                className="absolute -bottom-1.5 -right-1.5 w-8 h-8 rounded-xl p-0 border-2 border-white shadow-md"
+                style={{ background: 'linear-gradient(135deg, #6366f1, #ec4899)' }}
+              >
+                <Camera className="h-3.5 w-3.5 text-white" />
+              </Button>
+            </div>
+
+            <h1 className="text-2xl font-black text-white leading-tight">{profile.name}</h1>
+            <p className="text-white/65 text-sm mt-0.5">{profile.age} years old</p>
+
+            <div className="flex items-center gap-2 mt-3 bg-white/20 border border-white/30 px-4 py-1.5 rounded-full">
+              <span className="text-sm">🔥</span>
+              <span className="text-white text-xs font-bold">{healthStats.streak} day streak!</span>
+            </div>
           </div>
-          <Button
-            size="sm"
-            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full p-0"
-          >
-            <Camera className="h-4 w-4" />
-          </Button>
         </div>
-        <h1 className="text-2xl font-poppins font-semibold mb-1">{profile.name}</h1>
-        <p className="text-muted-foreground">{profile.age} years old</p>
-        <Badge className="mt-2 bg-health-good text-white">
-          {healthStats.streak} day streak! 🔥
-        </Badge>
-      </div>
 
-      {/* Family Linking Card - Share code with children */}
-      <Card className="glass border-0 shadow-premium overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5" />
-        <CardHeader className="relative pb-2">
-          <CardTitle className="text-lg flex items-center">
-            <Users className="h-5 w-5 mr-2 text-purple-600" />
-            Family Linking
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="relative space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Share this code with your child so they can monitor your health
-          </p>
+        {/* ── Quick stats ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { value: healthStats.totalMedicines, label: 'Active Medicines', color: 'text-violet-600', bg: 'bg-violet-50' },
+            { value: healthStats.healthRecords, label: 'Health Records', color: 'text-green-600', bg: 'bg-green-50' },
+          ].map(({ value, label, color, bg }) => (
+            <Card key={label} className="border-0 shadow-sm">
+              <CardContent className="p-4 flex flex-col items-center gap-1">
+                <span className={`text-3xl font-black leading-none ${color}`}>{value}</span>
+                <span className="text-xs text-muted-foreground font-medium">{label}</span>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-          {/* Link Code Display */}
-          <div className="bg-white/60 rounded-xl p-4 text-center">
-            <p className="text-xs text-muted-foreground mb-2">Your Link Code</p>
-            <div className="flex items-center justify-center space-x-3">
-              <span className="text-3xl font-mono font-bold tracking-[0.3em] text-primary">
+        {/* ── Family Linking ──────────────────────────────────────── */}
+        <Card className="border-0 shadow-md overflow-hidden">
+          <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #7c3aed, #ec4899)' }} />
+          <CardContent className="p-5 space-y-4">
+            {/* Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 flex items-center justify-center">
+                <Users className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 text-sm leading-none">Family Linking</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Share this code so family can monitor your health
+                </p>
+              </div>
+            </div>
+
+            {/* Code display */}
+            <div
+              className="rounded-2xl p-5 text-center border"
+              style={{ background: 'linear-gradient(135deg, #f5f3ff, #fdf4ff)', borderColor: '#e9d5ff' }}
+            >
+              <p className="text-[11px] font-bold text-purple-400 uppercase tracking-widest mb-2">Your Link Code</p>
+              <span className="text-4xl font-black font-mono tracking-[0.35em] bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
                 {parentLinkCode}
               </span>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex space-x-2">
-            <Button
-              onClick={copyLinkCode}
-              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Code
-                </>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={generateNewLinkCode}
-              title="Generate new code"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={copyLinkCode}
+                className="flex-1 h-11 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white transition-opacity hover:opacity-90 active:scale-95"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #ec4899)' }}
+              >
+                {copied ? (
+                  <><Check className="h-4 w-4" />Copied!</>
+                ) : (
+                  <><Copy className="h-4 w-4" />Copy Code</>
+                )}
+              </button>
+              <button
+                onClick={generateNewLinkCode}
+                title="Generate new code"
+                className="w-11 h-11 rounded-2xl border-2 border-purple-200 flex items-center justify-center text-purple-500 hover:border-purple-300 hover:bg-purple-50 transition-colors"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+            </div>
 
-          <p className="text-xs text-muted-foreground text-center">
-            Your child can enter this code in their DilCare app to see your health updates
-          </p>
-        </CardContent>
-      </Card>
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-medicine">{healthStats.totalMedicines}</div>
-            <div className="text-xs text-muted-foreground">Active Medicines</div>
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              Family members enter this code in their DilCare app to see your health updates
+            </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-health-good">{healthStats.healthRecords}</div>
-            <div className="text-xs text-muted-foreground">Health Records</div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Personal Information */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Personal Information</CardTitle>
-            <Dialog open={editMode} onOpenChange={setEditMode}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Profile</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      value={editedProfile.name}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="age">Age</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={editedProfile.age}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, age: parseInt(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={editedProfile.phone}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={editedProfile.email}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, email: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="bloodGroup">Blood Group</Label>
-                    <Input
-                      id="bloodGroup"
-                      value={editedProfile.bloodGroup}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, bloodGroup: e.target.value })}
-                    />
-                  </div>
-                  <Button onClick={saveProfile} className="w-full">
-                    Save Changes
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center space-x-3">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{profile.phone}</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{profile.email}</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{profile.address}</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Heart className="h-4 w-4 text-health-danger" />
-            <span className="text-sm">Blood Group: {profile.bloodGroup}</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Health Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Health Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Chronic Conditions</h4>
-            <div className="flex flex-wrap gap-2">
-              {profile.chronicConditions.map((condition, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {condition}
-                </Badge>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Allergies</h4>
-            <div className="flex flex-wrap gap-2">
-              {profile.allergies.map((allergy, index) => (
-                <Badge key={index} variant="destructive" className="text-xs">
-                  {allergy}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Achievements */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Gift className="h-5 w-5 mr-2 text-primary" />
-            Achievements
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="bg-muted/50 rounded-lg p-3 text-center">
-                <div className="text-2xl mb-1">{achievement.icon}</div>
-                <h4 className="font-semibold text-xs mb-1">{achievement.title}</h4>
-                <p className="text-xs text-muted-foreground">{achievement.description}</p>
+        {/* ── Personal Information ────────────────────────────────── */}
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-blue-400 to-cyan-400" />
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-4 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
+                <h2 className="font-black text-gray-900 text-sm">Personal Information</h2>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Settings className="h-5 w-5 mr-2 text-muted-foreground" />
-            Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Medicine Reminders</span>
+              <Dialog open={editMode} onOpenChange={setEditMode}>
+                <DialogTrigger asChild>
+                  <button className="flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition-colors">
+                    <Edit className="h-3.5 w-3.5" />
+                    Edit
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="rounded-3xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <Edit className="h-4 w-4 text-blue-600" />
+                      </div>
+                      Edit Profile
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-1">
+                    {[
+                      { id: 'name', label: 'Full Name', type: 'text', key: 'name' },
+                      { id: 'age', label: 'Age', type: 'number', key: 'age' },
+                      { id: 'phone', label: 'Phone', type: 'tel', key: 'phone' },
+                      { id: 'email', label: 'Email', type: 'email', key: 'email' },
+                      { id: 'bloodGroup', label: 'Blood Group', type: 'text', key: 'bloodGroup' },
+                    ].map(({ id, label, type, key }) => (
+                      <div key={id} className="space-y-1.5">
+                        <Label htmlFor={id} className="text-sm font-semibold">{label}</Label>
+                        <Input
+                          id={id} type={type}
+                          value={(editedProfile as any)[key]}
+                          onChange={e => setEditedProfile({
+                            ...editedProfile,
+                            [key]: type === 'number' ? parseInt(e.target.value) : e.target.value,
+                          })}
+                          className="h-11 rounded-xl"
+                        />
+                      </div>
+                    ))}
+                    <Button onClick={saveProfile} className="w-full h-11 rounded-xl font-semibold">
+                      Save Changes
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-            <Switch
-              checked={settings.medicineReminders}
-              onCheckedChange={(checked) => setSettings({ ...settings, medicineReminders: checked })}
-            />
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Heart className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Health Alerts</span>
+            <div className="space-y-3">
+              {[
+                { icon: Phone, value: profile.phone, color: 'text-blue-500', bg: 'bg-blue-50' },
+                { icon: Mail, value: profile.email, color: 'text-violet-500', bg: 'bg-violet-50' },
+                { icon: MapPin, value: profile.address, color: 'text-green-500', bg: 'bg-green-50' },
+                { icon: Heart, value: `Blood Group: ${profile.bloodGroup}`, color: 'text-red-500', bg: 'bg-red-50' },
+              ].map(({ icon: Icon, value, color, bg }) => (
+                <div key={value} className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
+                    <Icon className={`h-3.5 w-3.5 ${color}`} />
+                  </div>
+                  <span className="text-sm text-gray-700">{value}</span>
+                </div>
+              ))}
             </div>
-            <Switch
-              checked={settings.healthAlerts}
-              onCheckedChange={(checked) => setSettings({ ...settings, healthAlerts: checked })}
-            />
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Location Sharing</span>
+        {/* ── Health Information ──────────────────────────────────── */}
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-red-400 to-orange-400" />
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-4 rounded-full bg-gradient-to-b from-red-500 to-orange-400" />
+              <h2 className="font-black text-gray-900 text-sm">Health Information</h2>
             </div>
-            <Switch
-              checked={settings.locationSharing}
-              onCheckedChange={(checked) => setSettings({ ...settings, locationSharing: checked })}
-            />
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Support & Help */}
-      <div className="space-y-3">
-        <Button variant="outline" className="w-full justify-start">
-          <HelpCircle className="h-4 w-4 mr-3" />
-          Help & Support
-        </Button>
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Chronic Conditions</p>
+              <div className="flex flex-wrap gap-2">
+                {profile.chronicConditions.map((c, i) => (
+                  <span key={i} className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-        <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
-          <LogOut className="h-4 w-4 mr-3" />
-          Sign Out
-        </Button>
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Allergies</p>
+              <div className="flex flex-wrap gap-2">
+                {profile.allergies.map((a, i) => (
+                  <span key={i} className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
+                    {a}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Achievements ────────────────────────────────────────── */}
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-yellow-300" />
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-4 rounded-full bg-gradient-to-b from-amber-500 to-yellow-400" />
+              <Gift className="h-4 w-4 text-amber-500" />
+              <h2 className="font-black text-gray-900 text-sm">Achievements</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {achievements.map((achievement, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center text-center p-4 rounded-2xl border border-amber-100"
+                  style={{ background: 'linear-gradient(135deg, #fffbeb, #fef9c3)' }}
+                >
+                  <span className="text-3xl mb-2 leading-none">{achievement.icon}</span>
+                  <p className="font-bold text-gray-900 text-xs leading-snug">{achievement.title}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{achievement.description}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Settings ────────────────────────────────────────────── */}
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-gray-300 to-gray-400" />
+          <CardContent className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1.5 h-4 rounded-full bg-gradient-to-b from-gray-400 to-gray-500" />
+              <Settings className="h-4 w-4 text-gray-500" />
+              <h2 className="font-black text-gray-900 text-sm">Settings</h2>
+            </div>
+
+            <div className="space-y-1">
+              {[
+                { icon: Bell, label: 'Medicine Reminders', key: 'medicineReminders', color: 'text-violet-500', bg: 'bg-violet-50' },
+                { icon: Heart, label: 'Health Alerts', key: 'healthAlerts', color: 'text-red-500', bg: 'bg-red-50' },
+                { icon: Shield, label: 'Location Sharing', key: 'locationSharing', color: 'text-blue-500', bg: 'bg-blue-50' },
+              ].map(({ icon: Icon, label, key, color, bg }, i, arr) => (
+                <div key={key}>
+                  <div className="flex items-center justify-between py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center`}>
+                        <Icon className={`h-3.5 w-3.5 ${color}`} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-800">{label}</span>
+                    </div>
+                    <Switch
+                      checked={(settings as any)[key]}
+                      onCheckedChange={checked => setSettings({ ...settings, [key]: checked })}
+                    />
+                  </div>
+                  {i < arr.length - 1 && <div className="h-px bg-gray-100 ml-11" />}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Support & Sign Out ──────────────────────────────────── */}
+        <div className="space-y-2">
+          <button className="w-full h-12 rounded-2xl border-2 border-gray-200 flex items-center gap-3 px-4 text-sm font-semibold text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors">
+            <div className="w-7 h-7 rounded-xl bg-gray-100 flex items-center justify-center">
+              <HelpCircle className="h-3.5 w-3.5 text-gray-500" />
+            </div>
+            Help & Support
+          </button>
+          <button className="w-full h-12 rounded-2xl border-2 border-red-200 flex items-center gap-3 px-4 text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors">
+            <div className="w-7 h-7 rounded-xl bg-red-50 flex items-center justify-center">
+              <LogOut className="h-3.5 w-3.5 text-red-500" />
+            </div>
+            Sign Out
+          </button>
+        </div>
+
+        {/* ── App Info ────────────────────────────────────────────── */}
+        <div
+          className="rounded-3xl px-6 py-5 text-center relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #eef2ff, #fdf4ff, #fff1f2)' }}
+        >
+          <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-primary/5" />
+          <p
+            className="font-black text-base mb-1 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent"
+          >
+            DilCare v1.0
+          </p>
+          <p className="text-xs text-gray-600">Made with ❤️ for your health and happiness</p>
+          <p className="text-[11px] text-muted-foreground mt-1">© 2024 DilCare. All rights reserved.</p>
+        </div>
+
+        <div className="h-2" />
       </div>
-
-      {/* App Info */}
-      <Card className="bg-gradient-to-r from-primary/10 to-accent/20 border-primary/20">
-        <CardContent className="p-4 text-center">
-          <h3 className="font-semibold text-primary mb-2">DilCare v1.0</h3>
-          <p className="text-xs text-foreground">
-            Made with ❤️ for your health and happiness
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            © 2024 DilCare. All rights reserved.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 };

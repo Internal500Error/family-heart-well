@@ -4,14 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Calculator, 
-  TrendingUp, 
-  TrendingDown, 
-  Target, 
-  Calendar, 
-  Award, 
-  History, 
+import {
+  Calculator,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Calendar,
+  Award,
+  History,
   Scale,
   Heart,
   Brain,
@@ -27,26 +27,26 @@ function calculateBMI(weight: number, height: number) {
 }
 
 function getBMICategory(bmi: number) {
-  if (bmi < 18.5) return { 
-    label: 'Underweight', 
+  if (bmi < 18.5) return {
+    label: 'Underweight',
     color: 'bg-blue-100 text-blue-800',
     gradient: 'from-blue-500 to-blue-600',
     advice: 'Consider gaining weight with a balanced diet and exercise'
   };
-  if (bmi < 25) return { 
-    label: 'Normal', 
+  if (bmi < 25) return {
+    label: 'Normal',
     color: 'bg-green-100 text-green-800',
     gradient: 'from-green-500 to-green-600',
     advice: 'Great! Maintain your healthy weight with balanced lifestyle'
   };
-  if (bmi < 30) return { 
-    label: 'Overweight', 
+  if (bmi < 30) return {
+    label: 'Overweight',
     color: 'bg-yellow-100 text-yellow-800',
     gradient: 'from-yellow-500 to-yellow-600',
     advice: 'Consider weight loss through healthy diet and exercise'
   };
-  return { 
-    label: 'Obese', 
+  return {
+    label: 'Obese',
     color: 'bg-red-100 text-red-800',
     gradient: 'from-red-500 to-red-600',
     advice: 'Consult a healthcare provider for a weight management plan'
@@ -70,7 +70,7 @@ const BMICalculator: React.FC = () => {
   const [targetBMI, setTargetBMI] = useState(22.5);
   const [achievements, setAchievements] = useState<string[]>([]);
   const [showTargetSetter, setShowTargetSetter] = useState(false);
-  
+
   const bmi = calculateBMI(Number(weight), Number(height));
   const category = getBMICategory(bmi);
 
@@ -80,7 +80,7 @@ const BMICalculator: React.FC = () => {
     const savedStreak = localStorage.getItem('bmiStreak');
     const savedTarget = localStorage.getItem('bmiTarget');
     const savedAchievements = localStorage.getItem('bmiAchievements');
-    
+
     if (savedHistory) setBmiHistory(JSON.parse(savedHistory));
     if (savedStreak) setStreak(parseInt(savedStreak));
     if (savedTarget) setTargetBMI(parseFloat(savedTarget));
@@ -89,7 +89,7 @@ const BMICalculator: React.FC = () => {
 
   const saveBMIRecord = () => {
     if (!weight || !height) return;
-    
+
     const record: BMIRecord = {
       id: Date.now().toString(),
       weight: Number(weight),
@@ -98,23 +98,23 @@ const BMICalculator: React.FC = () => {
       date: new Date().toISOString().split('T')[0],
       category: category.label
     };
-    
+
     const updatedHistory = [record, ...bmiHistory.slice(0, 9)];
     setBmiHistory(updatedHistory);
     localStorage.setItem('bmiHistory', JSON.stringify(updatedHistory));
-    
+
     // Update streak
     const newStreak = streak + 1;
     setStreak(newStreak);
     localStorage.setItem('bmiStreak', newStreak.toString());
-    
+
     // Check for achievements
     checkAchievements(newStreak, bmi);
   };
 
   const checkAchievements = (currentStreak: number, currentBMI: number) => {
     const newAchievements = [...achievements];
-    
+
     if (currentStreak >= 7 && !achievements.includes('Week Warrior')) {
       newAchievements.push('Week Warrior');
     }
@@ -127,7 +127,7 @@ const BMICalculator: React.FC = () => {
     if (bmiHistory.length >= 10 && !achievements.includes('Tracking Pro')) {
       newAchievements.push('Tracking Pro');
     }
-    
+
     if (newAchievements.length > achievements.length) {
       setAchievements(newAchievements);
       localStorage.setItem('bmiAchievements', JSON.stringify(newAchievements));
@@ -145,48 +145,40 @@ const BMICalculator: React.FC = () => {
     if (bmiHistory.length < 2) return null;
     const current = bmiHistory[0]?.bmi || 0;
     const previous = bmiHistory[1]?.bmi || 0;
-    
+
     if (current > previous) return <TrendingUp className="h-4 w-4 text-red-500" />;
     if (current < previous) return <TrendingDown className="h-4 w-4 text-green-500" />;
     return <div className="w-4 h-4 bg-gray-400 rounded-full" />;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">BMI Calculator</h1>
-          <p className="text-muted-foreground">Track your Body Mass Index with AI-powered insights</p>
+        <div className="flex flex-col justify-between">
+          <h1 className="text-2xl font-bold text-foreground">BMI Calculator</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Track your Body Mass Index with AI-powered insights</p>
         </div>
 
         {/* Streak & Achievement Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg">
-                <Flame className="h-5 w-5 mr-2" />
-                Tracking Streak
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold mb-2">{streak}</div>
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <Flame className="h-5 w-5 mb-2 text-white/80" />
+              <div className="text-3xl font-bold leading-none">{streak}</div>
+              <div className="text-xs text-white/80 mt-1 font-medium">Tracking Streak</div>
               <p className="text-white/80 text-sm">
-                {streak >= 30 ? 'Amazing consistency!' : 
-                 streak >= 7 ? 'Great momentum!' : 'Keep building your habit!'}
+                {streak >= 30 ? 'Amazing consistency!' :
+                  streak >= 7 ? 'Great momentum!' : 'Keep building your habit!'}
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg">
-                <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
-                Achievements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold mb-2">{achievements.length}</div>
+          <Card className="bg-gradient-to-br from-purple-300 to-purple-400 text-white border-0">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+              <Trophy className="h-5 w-5 mb-2 text-white/80" />
+              <div className="text-3xl font-bold leading-none">{achievements.length}</div>
+              <div className="text-xs text-white/80 mt-1 font-medium">Achievements</div>
               <div className="flex flex-wrap gap-1">
                 {achievements.slice(0, 2).map((achievement, idx) => (
                   <Badge key={idx} variant="secondary" className="text-xs">
@@ -201,6 +193,7 @@ const BMICalculator: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
         </div>
 
         {/* BMI Calculator */}
@@ -229,16 +222,16 @@ const BMICalculator: React.FC = () => {
                   className="text-lg p-3"
                 />
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={saveBMIRecord}
-                disabled={!weight || !height} 
+                disabled={!weight || !height}
                 className="w-full text-lg py-3"
               >
                 <Calculator className="h-4 w-4 mr-2" />
                 Calculate & Save BMI
               </Button>
-              
+
               {bmi > 0 && (
                 <div className="text-center space-y-4 p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
                   <div className="space-y-2">
@@ -265,8 +258,8 @@ const BMICalculator: React.FC = () => {
                 <Target className="h-5 w-5 mr-2 text-green-500" />
                 Target BMI
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setShowTargetSetter(!showTargetSetter)}
               >
@@ -292,7 +285,7 @@ const BMICalculator: React.FC = () => {
                 </Button>
               </div>
             )}
-            
+
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Current: {bmi || 'Not calculated'}</span>
@@ -349,9 +342,9 @@ const BMICalculator: React.FC = () => {
         </Card>
 
         {/* Health Insights */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-0 shadow-md">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-base">
               <Brain className="h-5 w-5 mr-2 text-blue-500" />
               Health Insights
             </CardTitle>
