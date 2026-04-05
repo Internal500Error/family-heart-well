@@ -22,6 +22,7 @@ import {
   Waves,
   Timer
 } from 'lucide-react';
+import { waterService } from '@/lib/api-client';
 
 const DAILY_GOAL = 8; // 8 glasses
 const GLASS_SIZE = 250; // ml
@@ -52,48 +53,37 @@ const WaterTracker: React.FC = () => {
   const [showGoalSetter, setShowGoalSetter] = useState(false);
   const [lastDrinkTime, setLastDrinkTime] = useState<Date | null>(null);
   const [reminders, setReminders] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    loadSavedData();
-    initializeAchievements();
-    setupReminders();
+    loadWaterData();
   }, []);
 
   useEffect(() => {
-    saveData();
     checkAchievements();
   }, [glasses, streak, waterHistory]);
 
-  const loadSavedData = () => {
+  const loadWaterData = async () => {
     try {
-      const savedGlasses = localStorage.getItem('waterGlasses');
-      const savedStreak = localStorage.getItem('waterStreak');
-      const savedHistory = localStorage.getItem('waterHistory');
-      const savedGoal = localStorage.getItem('waterGoal');
-      const savedAchievements = localStorage.getItem('waterAchievements');
-      const savedReminders = localStorage.getItem('waterReminders');
-      
-      if (savedGlasses) setGlasses(parseInt(savedGlasses));
-      if (savedStreak) setStreak(parseInt(savedStreak));
-      if (savedHistory) setWaterHistory(JSON.parse(savedHistory));
-      if (savedGoal) setDailyGoal(parseInt(savedGoal));
-      if (savedAchievements) setAchievements(JSON.parse(savedAchievements));
-      if (savedReminders) setReminders(JSON.parse(savedReminders));
-    } catch (error) {
-      console.error('Error loading saved data:', error);
-    }
-  };
-
-  const saveData = () => {
-    try {
-      localStorage.setItem('waterGlasses', glasses.toString());
-      localStorage.setItem('waterStreak', streak.toString());
-      localStorage.setItem('waterHistory', JSON.stringify(waterHistory));
-      localStorage.setItem('waterGoal', dailyGoal.toString());
-      localStorage.setItem('waterAchievements', JSON.stringify(achievements));
-      localStorage.setItem('waterReminders', JSON.stringify(reminders));
-    } catch (error) {
-      console.error('Error saving data:', error);
+      setIsLoading(true);
+      const response = await waterService.getTodayWater();
+      if (response.data) {
+        setGlasses(response.data.glasses || 0);
+        setDailyGoal(response.data.goal || DAILY_GOAL);
+        setWaterHistory(response.data.history || []);
+        setAchievements(response.data.achievements || []);
+        setStreak(response.data.streak || 0);
+      }
+      setError('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to load water data');
+      console.error('Error loading water data:', err);
+      // Fallback to local initialization
+      initializeAchievements();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -135,47 +125,34 @@ const WaterTracker: React.FC = () => {
     }
   };
 
-  const addGlass = () => {
-    if (glasses < dailyGoal * 2) { // Allow up to 2x daily goal
-      setGlasses(g => g + 1);
-      setLastDrinkTime(new Date());
-      
-      // Update today's record
-      const today = new Date().toISOString().split('T')[0];
-      const todayRecord = waterHistory.find(r => r.date === today);
-      
-      if (todayRecord) {
-        const updated = waterHistory.map(r => 
-          r.date === today 
-            ? { ...r, glasses: glasses + 1, achieved: glasses + 1 >= dailyGoal }
-            : r
-        );
-        setWaterHistory(updated);
-      } else {
-        const newRecord: WaterRecord = {
-          id: Date.now().toString(),
-          glasses: glasses + 1,
-          date: today,
-          timestamp: Date.now(),
-          achieved: glasses + 1 >= dailyGoal
-        };
-        setWaterHistory([newRecord, ...waterHistory]);
+  const addGlass = async () => {
+    if (glasses < dailyGoal * 2) {
+      try {
+        setIsSaving(true);
+        await waterService.addGlass();
+        setLastDrinkTime(new Date());
+        await loadWaterData();
+      } catch (err: any) {
+        setError(err.message || 'Failed to add glass');
+        console.error('Error adding glass:', err);
+      } finally {
+        setIsSaving(false);
       }
     }
   };
 
-  const removeGlass = () => {
+  const removeGlass = async () => {
     if (glasses > 0) {
-      setGlasses(g => g - 1);
-      
-      // Update today's record
-      const today = new Date().toISOString().split('T')[0];
-      const updated = waterHistory.map(r => 
-        r.date === today 
-          ? { ...r, glasses: glasses - 1, achieved: glasses - 1 >= dailyGoal }
-          : r
-      );
-      setWaterHistory(updated);
+      try {
+        setIsSaving(true);
+        await waterService.removeGlass();
+        await loadWaterData();
+      } catch (err: any) {
+        setError(err.message || 'Failed to remove glass');
+        console.error('Error removing glass:', err);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -254,6 +231,17 @@ const WaterTracker: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading water tracker...</p>
+        </div>
+      </div>
+    );
+  }
+
   const hydrationStatus = getHydrationLevel();
   const progressPercentage = Math.min((glasses / dailyGoal) * 100, 100);
   const unlockedAchievements = achievements.filter(a => a.unlocked);
@@ -266,6 +254,12 @@ const WaterTracker: React.FC = () => {
           <h1 className="text-3xl font-bold text-foreground">Water Tracker</h1>
           <p className="text-muted-foreground">Stay hydrated with smart reminders and tracking</p>
         </div>
+
+        {error && (
+          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* Streak & Achievement Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -361,7 +355,7 @@ const WaterTracker: React.FC = () => {
                   onClick={removeGlass} 
                   size="lg" 
                   variant="outline" 
-                  disabled={glasses === 0}
+                  disabled={glasses === 0 || isSaving}
                   className="h-12 w-12 rounded-full"
                 >
                   <Minus className="h-5 w-5" />
@@ -375,7 +369,7 @@ const WaterTracker: React.FC = () => {
                 <Button 
                   onClick={addGlass} 
                   size="lg" 
-                  disabled={glasses >= dailyGoal * 2}
+                  disabled={glasses >= dailyGoal * 2 || isSaving}
                   className="h-12 w-12 rounded-full bg-cyan-500 hover:bg-cyan-600"
                 >
                   <Plus className="h-5 w-5" />

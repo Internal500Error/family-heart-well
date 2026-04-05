@@ -18,8 +18,12 @@ import DoctorSection from "./pages/DoctorSection";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Community from "./pages/Community";
+import Notifications from "./pages/Notifications";
 import ChildDashboard from "./pages/ChildDashboard";
-import { UserModeProvider } from "./hooks/useUserMode";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import { UserModeProvider } from "@/hooks/useUserMode";
+import FamilyLocation from "./pages/FamilyLocation";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +36,10 @@ const App = () => (
         <BrowserRouter>
           <DilCareLayout>
             <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/" element={<Index />} />
+              <Route path="/child-dashboard/location" element={<FamilyLocation />} />
               <Route path="/medicine" element={<MedicineReminder />} />
               <Route path="/health" element={<HealthTracker />} />
               <Route path="/steps" element={<StepTracker />} />
@@ -44,6 +51,7 @@ const App = () => (
               <Route path="/doctor" element={<DoctorSection />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/child-dashboard" element={<ChildDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
