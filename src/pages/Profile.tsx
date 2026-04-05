@@ -21,6 +21,7 @@ import {
   Share2,
   Check
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,36 +29,31 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { useUserMode } from '@/hooks/useUserMode';
-import FamilyService from '@/lib/family-service';
+import { userService, authService } from '@/lib/api-client';
 
 interface UserProfile {
-  name: string;
-  age: number;
-  phone: string;
-  email: string;
-  address: string;
-  emergencyContact: string;
-  bloodGroup: string;
-  allergies: string[];
-  chronicConditions: string[];
+  id?: string;
+  name?: string;
+  age?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  emergencyContact?: string;
+  bloodGroup?: string;
+  allergies?: string[];
+  chronicConditions?: string[];
 }
 
 const Profile = () => {
-  const { parentLinkCode, generateNewLinkCode } = useUserMode();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<UserProfile>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
-
-  const [profile, setProfile] = useState<UserProfile>({
-    name: 'Rajesh Kumar',
-    age: 65,
-    phone: '+91 98765 43210',
-    email: 'rajesh.kumar@email.com',
-    address: 'B-123, Green Valley Society, Mumbai',
-    emergencyContact: '+91 98765 43211',
-    bloodGroup: 'B+',
-    allergies: ['Penicillin', 'Peanuts'],
-    chronicConditions: ['Hypertension', 'Diabetes Type 2']
-  });
+  const [parentLinkCode, setParentLinkCode] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(profile);
 
   const [settings, setSettings] = useState({
     medicineReminders: true,
@@ -67,39 +63,92 @@ const Profile = () => {
     voiceAssistant: true,
     nightMode: false
   });
+  
+  // Real stats from backend (or fallback)
+  const [stats, setStats] = useState<{
+    totalMedicines: number;
+    healthRecords: number;
+    streak: number;
+    achievements: any[];
+  }>({
+    totalMedicines: 0,
+    healthRecords: 0,
+    streak: 0,
+    achievements: []
+  });
 
-  const [editMode, setEditMode] = useState(false);
-  const [editedProfile, setEditedProfile] = useState(profile);
-
-  // Save parent profile to family service whenever profile or link code changes
+  // Fetch profile on mount
   useEffect(() => {
-    if (parentLinkCode) {
-      const familyService = FamilyService.getInstance();
-      familyService.saveParentProfile({
-        linkCode: parentLinkCode,
-        name: profile.name,
-        age: profile.age,
-        phone: profile.phone,
-        bloodGroup: profile.bloodGroup,
-        healthData: {
-          bloodPressure: { systolic: 128, diastolic: 82, timestamp: new Date().toISOString() },
-          bloodSugar: { value: 105, timestamp: new Date().toISOString() },
-          stepsToday: 4500,
-          waterIntake: 1500,
-        },
-        medicines: {
-          total: 4,
-          taken: 3,
-          nextDue: { name: 'Blood Pressure Med', time: '6:00 PM' },
-        },
-        lastUpdated: new Date().toISOString(),
-      });
-    }
-  }, [profile, parentLinkCode]);
+    fetchProfile();
+    fetchLinkCode();
+  }, []);
 
-  const saveProfile = () => {
-    setProfile(editedProfile);
-    setEditMode(false);
+  const fetchProfile = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await userService.getProfile();
+      if (response.error) {
+        setError(response.error);
+      } else if (response.data) {
+        setProfile(response.data);
+        setEditedProfile(response.data);
+        if (response.data.stats) {
+          setStats({
+            totalMedicines: response.data.stats.total_medicines || 0,
+            healthRecords: response.data.stats.health_records || 0,
+            streak: response.data.stats.streak || 0,
+            achievements: response.data.stats.achievements || []
+          });
+        }
+      }
+    } catch (err) {
+      setError('Failed to load profile');
+      console.error('Profile error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchLinkCode = async () => {
+    try {
+      const response = await userService.getParentLinkCode();
+      if (response.data) {
+        setParentLinkCode(response.data.parent_link_code || '');
+      }
+    } catch (err) {
+      console.error('Link code error:', err);
+    }
+  };
+
+  const saveProfile = async () => {
+    setIsSaving(true);
+    setError('');
+    try {
+      const response = await userService.updateProfile(editedProfile);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setProfile(response.data || editedProfile);
+        setEditMode(false);
+      }
+    } catch (err) {
+      setError('Failed to save profile');
+      console.error('Save profile error:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const regenerateLinkCode = async () => {
+    try {
+      const response = await userService.regenerateLinkCode();
+      if (response.data) {
+        setParentLinkCode(response.data.parent_link_code || '');
+      }
+    } catch (err) {
+      console.error('Regenerate link code error:', err);
+    }
   };
 
   const copyLinkCode = () => {
@@ -108,19 +157,25 @@ const Profile = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const healthStats = {
-    totalMedicines: 4,
-    healthRecords: 12,
-    doctorVisits: 8,
-    streak: 15
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
   };
 
-  const achievements = [
-    { icon: '', title: 'Health Champion', description: '30 days streak!' },
-    { icon: '', title: 'Medicine Master', description: 'Never missed a dose' },
-    { icon: '', title: 'Knowledge Seeker', description: 'Read 50 health tips' },
-    { icon: '', title: 'Heart Hero', description: 'BP under control' }
-  ];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
@@ -155,7 +210,7 @@ const Profile = () => {
 
             <div className="flex items-center gap-2 mt-3 bg-white/20 border border-white/30 px-4 py-1.5 rounded-full">
               <span className="text-sm">🔥</span>
-              <span className="text-white text-xs font-bold">{healthStats.streak} day streak!</span>
+              <span className="text-white text-xs font-bold">{stats.streak} day streak!</span>
             </div>
           </div>
         </div>
@@ -163,8 +218,8 @@ const Profile = () => {
         {/* ── Quick stats ─────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           {[
-            { value: healthStats.totalMedicines, label: 'Active Medicines', color: 'text-violet-600', bg: 'bg-violet-50' },
-            { value: healthStats.healthRecords, label: 'Health Records', color: 'text-green-600', bg: 'bg-green-50' },
+            { value: stats.totalMedicines, label: 'Active Medicines', color: 'text-violet-600', bg: 'bg-violet-50' },
+            { value: stats.healthRecords, label: 'Health Records', color: 'text-green-600', bg: 'bg-green-50' },
           ].map(({ value, label, color, bg }) => (
             <Card key={label} className="border-0 shadow-sm">
               <CardContent className="p-4 flex flex-col items-center gap-1">
@@ -217,7 +272,7 @@ const Profile = () => {
                 )}
               </button>
               <button
-                onClick={generateNewLinkCode}
+                onClick={regenerateLinkCode}
                 title="Generate new code"
                 className="w-11 h-11 rounded-2xl border-2 border-purple-200 flex items-center justify-center text-purple-500 hover:border-purple-300 hover:bg-purple-50 transition-colors"
               >
@@ -291,12 +346,12 @@ const Profile = () => {
                 { icon: Mail, value: profile.email, color: 'text-violet-500', bg: 'bg-violet-50' },
                 { icon: MapPin, value: profile.address, color: 'text-green-500', bg: 'bg-green-50' },
                 { icon: Heart, value: `Blood Group: ${profile.bloodGroup}`, color: 'text-red-500', bg: 'bg-red-50' },
-              ].map(({ icon: Icon, value, color, bg }) => (
-                <div key={value} className="flex items-center gap-3">
+              ].map(({ icon: Icon, value, color, bg }, index) => (
+                <div key={index} className="flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
                     <Icon className={`h-3.5 w-3.5 ${color}`} />
                   </div>
-                  <span className="text-sm text-gray-700">{value}</span>
+                  <span className="text-sm text-gray-700">{value || 'Not provided'}</span>
                 </div>
               ))}
             </div>
@@ -315,22 +370,22 @@ const Profile = () => {
             <div>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Chronic Conditions</p>
               <div className="flex flex-wrap gap-2">
-                {profile.chronicConditions.map((c, i) => (
+                {profile.chronicConditions?.map((c, i) => (
                   <span key={i} className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
                     {c}
                   </span>
-                ))}
+                )) || <span className="text-xs text-gray-400 italic">None reported</span>}
               </div>
             </div>
 
             <div>
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Allergies</p>
               <div className="flex flex-wrap gap-2">
-                {profile.allergies.map((a, i) => (
+                {profile.allergies?.map((a, i) => (
                   <span key={i} className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
                     {a}
                   </span>
-                ))}
+                )) || <span className="text-xs text-gray-400 italic">No known allergies</span>}
               </div>
             </div>
           </CardContent>
@@ -346,17 +401,25 @@ const Profile = () => {
               <h2 className="font-black text-gray-900 text-sm">Achievements</h2>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {achievements.map((achievement, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center text-center p-4 rounded-2xl border border-amber-100"
-                  style={{ background: 'linear-gradient(135deg, #fffbeb, #fef9c3)' }}
-                >
-                  <span className="text-3xl mb-2 leading-none">{achievement.icon}</span>
-                  <p className="font-bold text-gray-900 text-xs leading-snug">{achievement.title}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{achievement.description}</p>
+              {stats.achievements && stats.achievements.length > 0 ? (
+                stats.achievements.map((achievement, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center text-center p-4 rounded-2xl border border-amber-100"
+                    style={{ background: 'linear-gradient(135deg, #fffbeb, #fef9c3)' }}
+                  >
+                    <span className="text-3xl mb-2 leading-none">{achievement.icon || '🏆'}</span>
+                    <p className="font-bold text-gray-900 text-xs leading-snug">{achievement.title}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{achievement.description}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-6 bg-amber-50/50 rounded-xl border border-amber-100/50">
+                  <Gift className="h-8 w-8 text-amber-300 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium text-amber-700/80">No achievements yet</p>
+                  <p className="text-xs text-amber-600/60 mt-1">Keep tracking your health to earn badges!</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -405,7 +468,7 @@ const Profile = () => {
             </div>
             Help & Support
           </button>
-          <button className="w-full h-12 rounded-2xl border-2 border-red-200 flex items-center gap-3 px-4 text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors">
+          <button onClick={handleLogout} className="w-full h-12 rounded-2xl border-2 border-red-200 flex items-center gap-3 px-4 text-sm font-semibold text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors">
             <div className="w-7 h-7 rounded-xl bg-red-50 flex items-center justify-center">
               <LogOut className="h-3.5 w-3.5 text-red-500" />
             </div>

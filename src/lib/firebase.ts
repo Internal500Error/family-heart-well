@@ -6,12 +6,12 @@ import { getAuth } from 'firebase/auth';
 
 // Demo configuration for development - replace with your actual Firebase config for production
 const firebaseConfig = {
-  apiKey: 'demo-api-key',
-  authDomain: 'demo.firebaseapp.com',
-  projectId: 'demo-project',
-  storageBucket: 'demo-project.appspot.com',
-  messagingSenderId: '123456789',
-  appId: 'demo-app-id',
+  apiKey: "AIzaSyBCesCTHIrSzRpeo8LKGKwFzlCw9rYLPEc",
+  authDomain: "mvpm-hackathon.firebaseapp.com",
+  projectId: "mvpm-hackathon",
+  storageBucket: "mvpm-hackathon.firebasestorage.app",
+  messagingSenderId: "849303250120",
+  appId: "1:849303250120:web:68ab45d379c8d368ceb1fd"
 };
 
 // Initialize Firebase only if credentials are properly configured

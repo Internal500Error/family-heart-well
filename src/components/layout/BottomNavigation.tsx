@@ -23,20 +23,20 @@ export const BottomNavigation: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  const isChildDashboard = location.pathname.includes('/child-dashboard');
+  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
+  
   // Track sliding pill position
   const [pillStyle, setPillStyle] = useState({ left: 0, width: ITEM_W, opacity: 0 });
   const [activeColor, setActiveColor] = useState(NAV_ITEMS[0].color);
   const [prevIdx, setPrevIdx] = useState(0);
-
-  const isChildDashboard = location.pathname.includes('/child-dashboard');
-  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
-  if (isAuthPage || isChildDashboard) return null;
 
   const activeIdx = NAV_ITEMS.findIndex(n => n.path === location.pathname);
   const safeIdx = activeIdx < 0 ? 0 : activeIdx;
 
   // Move sliding pill + scroll active into view
   useEffect(() => {
+    if (isAuthPage || isChildDashboard) return;
     const el = itemRefs.current[safeIdx];
     if (!el || !scrollRef.current) return;
 
@@ -53,7 +53,9 @@ export const BottomNavigation: React.FC = () => {
     container.scrollTo({ left: Math.max(0, scrollTo), behavior: 'smooth' });
 
     setPrevIdx(safeIdx);
-  }, [safeIdx]);
+  }, [safeIdx, isAuthPage, isChildDashboard]);
+
+  if (isAuthPage || isChildDashboard) return null;
 
   return (
     <>
