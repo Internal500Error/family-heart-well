@@ -18,7 +18,10 @@ const Notifications = () => {
     try {
       setIsLoading(true);
       const response = await communityService.getNotifications();
-      const data = response.data?.results || response.data;
+      const payload = response.data as unknown;
+      const data = Array.isArray(payload)
+        ? payload
+        : (payload as { results?: any[] })?.results ?? [];
       if (Array.isArray(data)) {
         setNotifications(data);
       }

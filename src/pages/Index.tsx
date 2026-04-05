@@ -54,7 +54,7 @@ const Index = () => {
       }
 
       // 4. Heart Rate latest
-      const hrRes = await healthService.getReadings({ type: 'hr', limit: 1 });
+      const hrRes = await healthService.getHealthReadings({ type: 'hr', limit: 1 });
       const hrData = hrRes.data?.results || hrRes.data;
       if (hrData && Array.isArray(hrData) && hrData.length > 0) {
         setLatestHR(`${hrData[0].value} BPM`);

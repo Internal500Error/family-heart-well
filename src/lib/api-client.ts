@@ -430,6 +430,11 @@ export const stepsService = {
     }
     return apiCall<any[]>(endpoint);
   },
+
+  syncGoogleFit: (access_token: string) => apiCall<any>('/steps/sync/google-fit/', {
+    method: 'POST',
+    body: { access_token }
+  }),
 };
 
 // ════════════════════════════════════════════════════════════════════

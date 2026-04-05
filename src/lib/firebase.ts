@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getStorage } from 'firebase/storage';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 // Demo configuration for development - replace with your actual Firebase config for production
 const firebaseConfig = {
@@ -19,12 +19,19 @@ let app: any = null;
 let storage: any = null;
 let db: any = null;
 let auth: any = null;
+let googleProvider: any = null;
 
 try {
   app = initializeApp(firebaseConfig);
   storage = getStorage(app);
   db = getFirestore(app);
   auth = getAuth(app);
+
+  // Setup Google Auth Provider configured for Google Fit Scopes
+  googleProvider = new GoogleAuthProvider();
+  googleProvider.addScope('https://www.googleapis.com/auth/fitness.activity.read');
+  googleProvider.addScope('https://www.googleapis.com/auth/fitness.body.read');
+  googleProvider.addScope('https://www.googleapis.com/auth/fitness.heart_rate.read');
 } catch (error) {
   console.warn('Firebase not configured for production. Using demo mode.');
   // Create mock objects for development
@@ -38,6 +45,7 @@ try {
     currentUser: null,
     signIn: () => Promise.resolve()
   };
+  googleProvider = null;
 }
 
-export { storage, db, auth };
+export { app, storage, db, auth, googleProvider };
