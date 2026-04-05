@@ -15,6 +15,8 @@ import {
   ResponsiveContainer, BarChart, Bar,
 } from 'recharts';
 import { stepsService } from '@/lib/api-client';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
 
 const StepTracker: React.FC = () => {
   const [currentSteps, setCurrentSteps] = useState(0);
@@ -121,11 +123,26 @@ const StepTracker: React.FC = () => {
 
   const connectGoogleFit = async () => {
     setIsConnecting(true);
-    // Simulate connection delay
-    setTimeout(() => {
-      setConnectionStatus(prev => ({ ...prev, googleFit: true }));
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      
+      if (token) {
+        await stepsService.syncGoogleFit(token);
+        setConnectionStatus(prev => ({ 
+          ...prev, 
+          googleFit: true, 
+          lastSync: new Date().toISOString() 
+        }));
+        await loadStepData();
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to connect Google Fit');
+      console.error('Fit error:', err);
+    } finally {
       setIsConnecting(false);
-    }, 1500);
+    }
   };
 
   const disconnectGoogleFit = async () => {
