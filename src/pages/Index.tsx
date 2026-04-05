@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Heart,
   Pill,
@@ -21,10 +21,82 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { NavLink } from 'react-router-dom';
+import { userService, stepsService, medicineService, bmiService, healthService } from '@/lib/api-client';
 
 const Index = () => {
   const currentHour = new Date().getHours();
-  const userName = "Dr. Sharma"; // More professional
+  
+  const [userName, setUserName] = useState("User");
+  const [stepsToday, setStepsToday] = useState(0);
+  const [latestBMI, setLatestBMI] = useState<string>("--");
+  const [latestHR, setLatestHR] = useState<string>("--");
+  const [medicinesDueCount, setMedicinesDueCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      // 1. User profile
+      const profileRes = await userService.getProfile();
+      if (profileRes.data?.name) {
+        setUserName(profileRes.data.name);
+      }
+
+      // 2. Steps today
+      const stepsRes = await stepsService.getTodaySteps();
+      if (stepsRes.data?.steps) {
+        setStepsToday(stepsRes.data.steps);
+      }
+
+      // 3. BMI latest
+      const bmiRes = await bmiService.getRecords();
+      if (bmiRes.data && Array.isArray(bmiRes.data) && bmiRes.data.length > 0) {
+        setLatestBMI(bmiRes.data[0].bmi.toFixed(1));
+      }
+
+      // 4. Heart Rate latest
+      const hrRes = await healthService.getReadings({ type: 'hr', limit: 1 });
+      const hrData = hrRes.data?.results || hrRes.data;
+      if (hrData && Array.isArray(hrData) && hrData.length > 0) {
+        setLatestHR(`${hrData[0].value} BPM`);
+      }
+
+      // 5. Meds for notifications
+      const medsRes = await medicineService.getTodayMedicines();
+      const newNotifs = [];
+      if (medsRes.data && Array.isArray(medsRes.data)) {
+        const dueMeds = medsRes.data.filter(m => !m.is_taken);
+        setMedicinesDueCount(dueMeds.length);
+        if (dueMeds.length > 0) {
+          newNotifs.push({
+            id: 'med-1',
+            tag: 'Medicine Reminder',
+            time: 'Today',
+            title: `Time for ${dueMeds[0].medicine_name}!`,
+            message: `Please take your medication: ${dueMeds[0].dosage}`,
+            icon: Pill,
+            variant: 'blue',
+          });
+        }
+      }
+      
+      // Fallback if no real notifications yet
+      if (newNotifs.length === 0) {
+        newNotifs.push({
+          id: 'welcome-1',
+          tag: 'Welcome',
+          time: 'Just Now',
+          title: 'Welcome to DilCare!',
+          message: 'Your health dashboard is ready.',
+          icon: Sparkles,
+          variant: 'emerald',
+        });
+      }
+      
+      setNotifications(newNotifs);
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const getGreetingIcon = () => {
     if (currentHour < 12) return <Sunrise className="h-6 w-6 text-amber-500" />;
@@ -45,7 +117,7 @@ const Index = () => {
       label: 'Medications',
       description: 'Smart Reminders',
       gradient: 'from-blue-500 to-blue-600',
-      badge: '2 due',
+      badge: medicinesDueCount > 0 ? `${medicinesDueCount} due` : null,
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600'
     },
@@ -55,7 +127,7 @@ const Index = () => {
       label: 'Step Tracker',
       description: 'Track Steps',
       gradient: 'from-orange-500 to-orange-600',
-      badge: '8,432',
+      badge: stepsToday > 0 ? stepsToday.toLocaleString() : null,
       bgColor: 'bg-orange-50',
       iconColor: 'text-orange-600'
     },
@@ -95,48 +167,16 @@ const Index = () => {
       label: 'Wellness',
       description: 'Expert Tips',
       gradient: 'from-purple-500 to-purple-600',
-      badge: '3 new',
+      badge: null,
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-600'
     }
   ];
 
-  const notifications = [
-    {
-      id: '1',
-      tag: 'Medicine Reminder',
-      time: '08:30 AM',
-      title: 'Time for Telma 40!',
-      message: 'Please take your blood pressure medication after breakfast.',
-      icon: Pill,
-      variant: 'blue', // Uses blue theme
-    },
-    {
-      id: '2',
-      tag: 'Lab Report',
-      time: 'Just Now',
-      title: 'Annual Checkup Results Arrived',
-      message: 'Your lipid profile report is now available for review.',
-      icon: Activity,
-      variant: 'emerald',
-      actionLabel: 'View Report',
-    },
-    {
-      id: '3',
-      tag: 'Family Update',
-      time: '2h ago',
-      title: 'Message for Papa',
-      message: 'Don\'t forget to check sugar levels today before lunch."',
-      icon: User,
-      variant: 'purple',
-      isItalic: true,
-    }
-  ];
-
   const healthStats = [
-    { label: 'Steps Today', value: '8,432', trend: '+12%', icon: Footprints, color: 'text-orange-600' },
-    { label: 'BMI', value: '22.5', trend: 'Normal', icon: Scale, color: 'text-purple-600' },
-    { label: 'Heart Rate', value: '78 BPM', trend: 'Normal', icon: Heart, color: 'text-blue-600' },
+    { label: 'Steps Today', value: stepsToday.toLocaleString(), trend: 'Active', icon: Footprints, color: 'text-orange-600' },
+    { label: 'BMI', value: latestBMI, trend: 'Normal', icon: Scale, color: 'text-purple-600' },
+    { label: 'Heart Rate', value: latestHR, trend: 'Normal', icon: Heart, color: 'text-blue-600' },
   ];
 
   const ActionCard = ({ item }) => {

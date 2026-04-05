@@ -13,7 +13,9 @@ import {
   Settings,
   Key,
   X,
-  Sparkles
+  Sparkles,
+  Loader,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +30,8 @@ interface ChatMessage {
 }
 
 // AI API Integration
+// NOTE: AI endpoints from backend should be added here once implemented
+// For now, using Groq API as fallback - in production, migrate to backend AI service
 const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 

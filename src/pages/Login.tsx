@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
-import { Heart, User, Phone, ArrowRight, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { Heart, Mail, Lock, ArrowRight, Loader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { authService } from '@/lib/api-client';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types 
 interface LoginForm {
-  name: string;
-  phone: string;
+  email: string;
+  password: string;
 }
 
-type Step = 'credentials' | 'otp';
+type Step = 'credentials' | 'loading';
 
-const DEFAULT_OTP = '2804';
-
-// ─── Field Component ───────────────────────────────────────────────────────────
+// Field Component 
 const Field = ({ label, icon: Icon, error, ...props }: {
   label: string; icon: React.ElementType; error?: string;
 } & React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -35,50 +34,61 @@ const Field = ({ label, icon: Icon, error, ...props }: {
 // ─── Main Login Component ──────────────────────────────────────────────────────
 const Login = () => {
   const [step, setStep] = useState<Step>('credentials');
-  const [form, setForm] = useState<LoginForm>({ name: '', phone: '' });
+  const [form, setForm] = useState<LoginForm>({ email: '', password: '' });
   const [errors, setErrors] = useState<Partial<LoginForm>>({});
-  const [otpValue, setOtpValue] = useState(['', '', '', '']);
-  const [otpError, setOtpError] = useState('');
+  const [apiError, setApiError] = useState('');
 
   const update = (field: keyof LoginForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
+    if (apiError) setApiError('');
   };
 
   const validate = () => {
     const newErrors: Partial<LoginForm> = {};
-    // if (!form.name.trim()) newErrors.name = 'Please enter your name';
-    // if (!/^\+?[0-9]{10,13}$/.test(form.phone.replace(/\s/g, '')))
-    //   newErrors.phone = 'Enter a valid phone number';
-    // setErrors(newErrors);
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Enter a valid email';
+    if (!form.password) newErrors.password = 'Password is required';
+    if (form.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSendOtp = () => {
-    if (validate()) setStep('otp');
-  };
+  const handleLogin = async () => {
+    if (!validate()) return;
+    
+    setStep('loading');
+    try {
+      const response = await authService.login(form.email, form.password);
 
-  const handleOtpChange = (i: number, val: string) => {
-    if (!/^\d?$/.test(val)) return;
-    const next = [...otpValue];
-    next[i] = val;
-    setOtpValue(next);
-    setOtpError('');
-    if (val && i < 3) {
-      document.getElementById(`login-otp-${i + 1}`)?.focus();
+      if (response.error) {
+        setApiError(response.error);
+        setStep('credentials');
+      } else if (response.data) {
+        // Login successful - tokens are stored by authService
+        // Redirect to home
+        window.location.href = '/';
+      }
+    } catch (err: any) {
+      setApiError(err.message || 'Login failed. Please try again.');
+      setStep('credentials');
     }
   };
 
-  const handleOtpVerify = () => {
-    const entered = otpValue.join('');
-    if (entered === DEFAULT_OTP) {
-      window.location.href = '/';
-    } else {
-      setOtpError('Invalid OTP. Please try again.');
-      setOtpValue(['', '', '', '']);
-      document.getElementById('login-otp-0')?.focus();
-    }
+  const handleRegister = () => {
+    window.location.href = '/signup';
   };
+
+  if (step === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #fff5f5 0%, #fff 60%)' }}>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto" />
+          <p className="text-gray-600 font-medium">Logging you in...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #fff5f5 0%, #fff 60%)' }}>
@@ -100,131 +110,78 @@ const Login = () => {
           <h1 className="text-3xl font-bold text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
             DilCare
           </h1>
-          <p className="text-white/70 text-sm mt-1">Welcome back 👋</p>
+          <p className="text-white/80 text-sm mt-1">Health care app for families</p>
         </div>
       </div>
 
-      {/* Card */}
-      <div className="px-5 -mt-6 pb-8">
-        <Card className="shadow-2xl border-0 rounded-2xl overflow-hidden">
-          <CardContent className="p-6">
+      {/* Main section */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <Card className="w-full max-w-sm border-0 shadow-xl rounded-3xl">
+          <CardContent className="p-8">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+              <p className="text-sm text-gray-600">Sign in to access your health information</p>
+            </div>
 
-            {/* ── CREDENTIALS STEP ── */}
-            {step === 'credentials' && (
-              <div className="space-y-5">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 mt-4">Log In</h2>
-                  <p className="text-gray-500 text-sm mt-1">Enter your details to continue</p>
-                </div>
-
-                <Field label="Your Name" icon={User} placeholder="Rajesh Kumar"
-                  value={form.name} onChange={e => update('name', e.target.value)}
-                  error={errors.name} />
-
-                <Field label="Phone Number" icon={Phone} placeholder="+91 98765 43210"
-                  type="tel" value={form.phone}
-                  onChange={e => update('phone', e.target.value)}
-                  error={errors.phone} />
-
-                <Button
-                  onClick={handleSendOtp}
-                  className="w-full h-12 rounded-xl text-base font-semibold border-0 mt-2"
-                  style={{ background: 'linear-gradient(135deg, #646cffaa, #5915a7)' }}>
-                  Send OTP <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-
-                {/* Divider */}
-                <div className="flex items-center space-x-3">
-                  <div className="flex-1 h-px bg-gray-100" />
-                  <span className="text-gray-400 text-xs">New to DilCare?</span>
-                  <div className="flex-1 h-px bg-gray-100" />
-                </div>
-
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.href = '/signup'}
-                  className="w-full h-12 rounded-xl text-base font-semibold border-2 border-rose-200 text-rose-500 hover:bg-rose-50">
-                  Create an Account
-                </Button>
+            {apiError && (
+              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-700 mb-6">
+                {apiError}
               </div>
             )}
 
-            {/* ── OTP STEP ── */}
-            {step === 'otp' && (
-              <div className="space-y-6">
-                <button
-                  onClick={() => { setStep('credentials'); setOtpValue(['', '', '', '']); setOtpError(''); }}
-                  className="flex items-center text-blue-500 text-sm font-medium -mt-1">
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Back
-                </button>
+            <div className="space-y-5 mb-8">
+              <Field
+                label="Email"
+                icon={Mail}
+                type="email"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={(e) => update('email', e.target.value)}
+                error={errors.email}
+              />
+              <Field
+                label="Password"
+                icon={Lock}
+                type="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+                error={errors.password}
+              />
+            </div>
 
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                    <Phone className="h-8 w-8 text-blue-500" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-800">Enter OTP</h2>
-                  <p className="text-gray-500 text-sm mt-2">
-                    We sent a 4-digit code to<br />
-                    <span className="font-semibold text-gray-700">{form.phone}</span>
-                  </p>
-                </div>
+            <Button
+              onClick={handleLogin}
+              className="w-full h-12 rounded-xl font-semibold mb-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+            >
+              Sign In
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
 
-                {/* OTP Boxes */}
-                <div className="flex justify-center space-x-3">
-                  {otpValue.map((digit, i) => (
-                    <input
-                      key={i}
-                      id={`login-otp-${i}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={e => handleOtpChange(i, e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Backspace' && !digit && i > 0) {
-                          document.getElementById(`login-otp-${i - 1}`)?.focus();
-                        }
-                      }}
-                      className={`w-14 h-16 text-center text-2xl font-bold rounded-xl border-2 outline-none transition-all
-                        ${digit ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}
-                        ${otpError ? 'border-red-400 bg-red-50' : ''}
-                        focus:border-blue-500 focus:ring-2 focus:ring-blue-100`}
-                    />
-                  ))}
-                </div>
-
-                {otpError && (
-                  <p className="text-center text-sm text-red-500 font-medium">{otpError}</p>
-                )}
-
-              <Button
-                  onClick={handleOtpVerify}
-                  disabled={otpValue.some(d => d === '')}
-                  className="w-full h-12 rounded-xl text-base font-semibold border-0"
-                  style={{ background: 'linear-gradient(135deg, #646cffaa, #5915a7)' }}>
-                  <CheckCircle2 className="mr-2 h-4 w-4" /> Verify & Log In
-                </Button>
-
-                <p className="text-center text-sm text-gray-400">
-                  Didn't receive the OTP?{' '}
-                  <span
-                    className="text-rose-500 font-semibold cursor-pointer"
-                    onClick={() => {
-                      setOtpValue(['', '', '', '']);
-                      setOtpError('');
-                    }}>
-                    Resend
-                  </span>
-                </p>
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
               </div>
-            )}
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">or</span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={handleRegister}
+              className="w-full h-12 rounded-xl font-semibold border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+            >
+              Create Account
+            </Button>
+
+            <p className="text-xs text-gray-500 text-center mt-6">
+              <strong>Demo credentials:</strong><br />
+              Email: test@example.com<br />
+              Password: TestPass123!
+            </p>
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Made with ❤️ by DilCare · v1.0
-        </p>
       </div>
     </div>
   );

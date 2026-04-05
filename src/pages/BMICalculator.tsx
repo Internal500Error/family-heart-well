@@ -18,8 +18,10 @@ import {
   Zap,
   Trophy,
   Flame,
-  LineChart
+  LineChart,
+  Loader
 } from 'lucide-react';
+import { bmiService } from '@/lib/api-client';
 
 function calculateBMI(weight: number, height: number) {
   if (!weight || !height) return 0;
@@ -70,46 +72,103 @@ const BMICalculator: React.FC = () => {
   const [targetBMI, setTargetBMI] = useState(22.5);
   const [achievements, setAchievements] = useState<string[]>([]);
   const [showTargetSetter, setShowTargetSetter] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const bmi = calculateBMI(Number(weight), Number(height));
   const category = getBMICategory(bmi);
 
+  // Load BMI records from API
   useEffect(() => {
-    // Load saved data from localStorage
-    const savedHistory = localStorage.getItem('bmiHistory');
-    const savedStreak = localStorage.getItem('bmiStreak');
-    const savedTarget = localStorage.getItem('bmiTarget');
-    const savedAchievements = localStorage.getItem('bmiAchievements');
-
-    if (savedHistory) setBmiHistory(JSON.parse(savedHistory));
-    if (savedStreak) setStreak(parseInt(savedStreak));
-    if (savedTarget) setTargetBMI(parseFloat(savedTarget));
-    if (savedAchievements) setAchievements(JSON.parse(savedAchievements));
+    const loadRecords = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await bmiService.getRecords();
+        if (!response.error && Array.isArray(response.data)) {
+          const records: BMIRecord[] = response.data.map(r => ({
+            id: String(r.id),
+            weight: r.weight,
+            height: r.height,
+            bmi: r.bmi || calculateBMI(r.weight, r.height),
+            date: r.recorded_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            category: r.category || getBMICategory(r.bmi || calculateBMI(r.weight, r.height)).label,
+          }));
+          setBmiHistory(records);
+          
+          // Calculate streak from most recent records
+          if (records.length > 0) {
+            let currentStreak = 1;
+            for (let i = 1; i < Math.min(records.length, 30); i++) {
+              const currentDate = new Date(records[i - 1].date);
+              const previousDate = new Date(records[i].date);
+              const diffDays = Math.floor((currentDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24));
+              if (diffDays === 1) {
+                currentStreak++;
+              } else {
+                break;
+              }
+            }
+            setStreak(currentStreak);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load BMI records:', err);
+        setError('Failed to load BMI records');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadRecords();
   }, []);
 
-  const saveBMIRecord = () => {
-    if (!weight || !height) return;
+  const saveBMIRecord = async () => {
+    if (!weight || !height) {
+      setError('Please enter weight and height');
+      return;
+    }
 
-    const record: BMIRecord = {
-      id: Date.now().toString(),
-      weight: Number(weight),
-      height: Number(height),
-      bmi,
-      date: new Date().toISOString().split('T')[0],
-      category: category.label
-    };
+    setIsSaving(true);
+    setError('');
+    try {
+      const response = await bmiService.addRecord({
+        weight: Number(weight),
+        height: Number(height),
+      });
 
-    const updatedHistory = [record, ...bmiHistory.slice(0, 9)];
-    setBmiHistory(updatedHistory);
-    localStorage.setItem('bmiHistory', JSON.stringify(updatedHistory));
+      if (response.error) {
+        setError('Failed to save BMI record');
+      } else {
+        const record: BMIRecord = {
+          id: String(response.data?.id || Date.now()),
+          weight: Number(weight),
+          height: Number(height),
+          bmi,
+          date: new Date().toISOString().split('T')[0],
+          category: category.label
+        };
 
-    // Update streak
-    const newStreak = streak + 1;
-    setStreak(newStreak);
-    localStorage.setItem('bmiStreak', newStreak.toString());
+        const updatedHistory = [record, ...bmiHistory];
+        setBmiHistory(updatedHistory);
 
-    // Check for achievements
-    checkAchievements(newStreak, bmi);
+        // Update streak
+        const newStreak = streak + 1;
+        setStreak(newStreak);
+
+        // Check for achievements
+        checkAchievements(newStreak, bmi);
+
+        // Clear form
+        setWeight('');
+        setHeight('');
+      }
+    } catch (err) {
+      console.error('Failed to save BMI record:', err);
+      setError('Failed to save BMI record');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const checkAchievements = (currentStreak: number, currentBMI: number) => {
@@ -154,17 +213,37 @@ const BMICalculator: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
-        {/* Header */}
-        <div className="flex flex-col justify-between">
-          <h1 className="text-2xl font-bold text-foreground">BMI Calculator</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Track your Body Mass Index with AI-powered insights</p>
-        </div>
 
-        {/* Streak & Achievement Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-              <Flame className="h-5 w-5 mb-2 text-white/80" />
+        {/* ── Error Banner ───────────────────────────────────────────── */}
+        {error && (
+          <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3 flex items-start gap-3">
+            <div className="h-5 w-5 rounded-full bg-red-200 flex items-center justify-center shrink-0 mt-0.5 text-red-700 text-xs font-bold">!</div>
+            <p className="text-sm text-red-700 flex-1">{error}</p>
+            <button onClick={() => setError('')} className="text-red-400 text-lg font-bold shrink-0">×</button>
+          </div>
+        )}
+
+        {/* ── Loading State ───────────────────────────────────────────– */}
+        {isLoading ? (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="py-8 flex flex-col items-center gap-3">
+              <Loader className="h-6 w-6 text-primary animate-spin" />
+              <p className="text-sm text-muted-foreground">Loading BMI records...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex flex-col justify-between">
+              <h1 className="text-2xl font-bold text-foreground">BMI Calculator</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">Track your Body Mass Index with AI-powered insights</p>
+            </div>
+
+            {/* Streak & Achievement Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                  <Flame className="h-5 w-5 mb-2 text-white/80" />
               <div className="text-3xl font-bold leading-none">{streak}</div>
               <div className="text-xs text-white/80 mt-1 font-medium">Tracking Streak</div>
               <p className="text-white/80 text-sm">
@@ -368,6 +447,8 @@ const BMICalculator: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
     </div>
   );

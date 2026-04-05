@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Pill, Plus, Clock, CheckCircle2, AlertCircle,
   Camera, Mic, XCircle, Sparkles, ShieldCheck,
@@ -14,14 +14,15 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { medicineService } from '@/lib/api-client';
 
 interface Medicine {
-  id: string;
+  id: number;
   name: string;
   dosage: string;
   frequency: string;
   time: string;
-  taken: boolean;
+  is_taken: boolean;
   missed?: boolean;
   color: string;
 }
@@ -38,30 +39,86 @@ const PILL_COLORS = [
 const pickColor = (idx: number) => PILL_COLORS[idx % PILL_COLORS.length];
 
 const MedicineReminder = () => {
-  const [medicines, setMedicines] = useState<Medicine[]>([
-    { id: '1', name: 'Atorvastatin', dosage: '20mg', frequency: 'Daily', time: '8:00 PM', taken: false, color: JSON.stringify(pickColor(0)) },
-    { id: '2', name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', time: '9:00 AM, 9:00 PM', taken: true, color: JSON.stringify(pickColor(1)) },
-    { id: '3', name: 'Lisinopril', dosage: '10mg', frequency: 'Daily', time: '7:00 AM', taken: false, missed: true, color: JSON.stringify(pickColor(2)) },
-  ]);
-
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
   const [newMedicine, setNewMedicine] = useState({ name: '', dosage: '', frequency: '', time: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const toggleTaken = (id: string) =>
-    setMedicines(prev => prev.map(m => m.id === id ? { ...m, taken: !m.taken, missed: false } : m));
+  useEffect(() => {
+    fetchMedicines();
+  }, []);
 
-  const addMedicine = () => {
-    if (!newMedicine.name || !newMedicine.dosage || !newMedicine.frequency || !newMedicine.time) return;
-    setMedicines(prev => [
-      ...prev,
-      { id: Date.now().toString(), ...newMedicine, taken: false, color: JSON.stringify(pickColor(prev.length)) },
-    ]);
-    setNewMedicine({ name: '', dosage: '', frequency: '', time: '' });
-    setDialogOpen(false);
+  const fetchMedicines = async () => {
+    try {
+      setIsLoading(true);
+      // Get today's medicine intakes (which include is_taken status)
+      const response = await medicineService.getTodayMedicines();
+      if (response.data && Array.isArray(response.data)) {
+        const medicinesWithColors = response.data.map((med: any, idx: number) => ({
+          ...med,
+          color: JSON.stringify(pickColor(idx)),
+        }));
+        setMedicines(medicinesWithColors);
+      } else if (response.error) {
+        setError(response.error);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch medicines');
+      console.error('Error fetching medicines:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const pending = medicines.filter(m => !m.taken);
-  const completed = medicines.filter(m => m.taken);
+  const toggleTaken = async (intakeId: number, currentStatus: boolean) => {
+    try {
+      setIsSaving(true);
+      // Toggle the intake status (convert ID to string for API call)
+      const response = await medicineService.toggleMedicineIntake(
+        String(intakeId),
+        { is_taken: !currentStatus } // Send the toggle data properly
+      );
+      if (response.error) {
+        setError(response.error);
+      } else {
+        // Refresh the medicines list after toggling
+        await fetchMedicines();
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to update medicine');
+      console.error('Error updating medicine:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const addMedicine = async () => {
+    if (!newMedicine.name || !newMedicine.dosage || !newMedicine.frequency || !newMedicine.time) {
+      setError('Please fill in all fields');
+      return;
+    }
+    try {
+      setIsSaving(true);
+      const response = await medicineService.addMedicine(newMedicine);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setNewMedicine({ name: '', dosage: '', frequency: '', time: '' });
+        setDialogOpen(false);
+        await fetchMedicines();
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to add medicine');
+      console.error('Error adding medicine:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const pending = medicines.filter(m => !m.is_taken);
+  const completed = medicines.filter(m => m.is_taken);
   const missed = medicines.filter(m => m.missed);
 
   const stats = [
@@ -69,6 +126,17 @@ const MedicineReminder = () => {
     { label: 'Taken', value: completed.length, textColor: 'text-green-600', bg: 'bg-green-50' },
     { label: 'Missed', value: missed.length, textColor: 'text-red-500', bg: 'bg-red-50' },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading medicines...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
@@ -214,13 +282,18 @@ const MedicineReminder = () => {
             </span>
           </div>
 
+          {error && (
+            <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <div className="space-y-3">
             {medicines.map((medicine) => {
               const col = JSON.parse(medicine.color) as { dot: string; light: string };
               return (
                 <Card
                   key={medicine.id}
-                  className={`border-0 shadow-sm overflow-hidden transition-all duration-200 ${medicine.taken ? 'opacity-60' : 'hover:shadow-md'
+                  className={`border-0 shadow-sm overflow-hidden transition-all duration-200 ${medicine.is_taken ? 'opacity-60' : 'hover:shadow-md'
                     }`}
                 >
                   <div className="flex">
@@ -247,7 +320,7 @@ const MedicineReminder = () => {
                                 Missed
                               </Badge>
                             )}
-                            {medicine.taken && (
+                            {medicine.is_taken && (
                               <Badge className="text-[10px] px-1.5 py-0 h-4 leading-none bg-green-500 text-white border-0">
                                 Taken
                               </Badge>
@@ -266,14 +339,15 @@ const MedicineReminder = () => {
 
                         {/* Take button */}
                         <button
-                          onClick={() => toggleTaken(medicine.id)}
-                          className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center border-2 transition-all duration-200 ${medicine.taken
+                          onClick={() => toggleTaken(medicine.id, medicine.is_taken)}
+                          disabled={isSaving}
+                          className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center border-2 transition-all duration-200 ${medicine.is_taken
                               ? 'bg-green-500 border-green-500'
                               : 'bg-white hover:border-green-400'
-                            }`}
-                          style={!medicine.taken ? { borderColor: col.dot + '60' } : {}}
+                            } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          style={!medicine.is_taken ? { borderColor: col.dot + '60' } : {}}
                         >
-                          {medicine.taken
+                          {medicine.is_taken
                             ? <CheckCircle2 className="h-5 w-5 text-white" />
                             : <div className="w-4 h-4 rounded-full border-2" style={{ borderColor: col.dot }} />
                           }
