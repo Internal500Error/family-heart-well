@@ -18,10 +18,11 @@ import DoctorSection from "./pages/DoctorSection";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Community from "./pages/Community";
+import Notifications from "./pages/Notifications";
 import ChildDashboard from "./pages/ChildDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import { UserModeProvider } from "./hooks/useUserMode";
+import { UserModeProvider } from "@/hooks/useUserMode";
 import FamilyLocation from "./pages/FamilyLocation";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/doctor" element={<DoctorSection />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/child-dashboard" element={<ChildDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

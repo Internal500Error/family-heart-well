@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen, Apple, Dumbbell, Wind, Heart,
   CheckCircle2, Play, Pause, Star, Clock, Sparkles,
-  Trophy, Flame,
+  Trophy, Flame, Loader,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { gyaanService } from '@/lib/api-client';
 
 interface GyaanTip {
   id: string;
@@ -59,46 +60,60 @@ const GyaanCorner = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('all');
   const timer = useTimer();
 
-  const [tips, setTips] = useState<GyaanTip[]>([
-    {
-      id: '1', category: 'nutrition',
-      title: 'Morning Lemon Water',
-      description: 'Start your day with warm lemon water for better digestion',
-      content: 'Squeeze half a lemon in a glass of warm water. Drink it first thing in the morning on an empty stomach. This helps boost metabolism, aids digestion, and provides vitamin C.',
-      completed: true, favorite: true, streak: 7,
-    },
-    {
-      id: '2', category: 'exercise',
-      title: 'Gentle Morning Stretches',
-      description: '5-minute stretching routine for flexibility',
-      content: '1. Neck rolls (5 each direction)\n2. Shoulder shrugs (10 times)\n3. Arm circles (10 each direction)\n4. Gentle spinal twists (5 each side)\n5. Ankle rolls (10 each foot)',
-      duration: 5, completed: false, favorite: false,
-    },
-    {
-      id: '3', category: 'meditation',
-      title: 'Deep Breathing Exercise',
-      description: '3-minute breathing technique for relaxation',
-      content: 'Sit comfortably with your back straight. Breathe in slowly through your nose for 4 counts, hold for 4 counts, then exhale through your mouth for 6 counts. Repeat this cycle.',
-      duration: 3, completed: false, favorite: true,
-    },
-    {
-      id: '4', category: 'ayurveda',
-      title: 'Turmeric Golden Milk',
-      description: 'Anti-inflammatory bedtime drink',
-      content: 'Mix 1 tsp turmeric powder, pinch of black pepper, 1 tsp honey in warm milk. Drink before bedtime. This helps reduce inflammation and promotes better sleep.',
-      completed: false, favorite: false,
-    },
-  ]);
+  // API state
+  const [tips, setTips] = useState<GyaanTip[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
+  // Load tips from API
+  useEffect(() => {
+    const loadTips = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await gyaanService.getTips();
+        if (response.error) {
+          setError('Failed to load tips');
+          setTips([]);
+        } else {
+          const data = Array.isArray(response.data) ? response.data : [];
+          setTips(data.map(t => ({
+            id: String(t.id),
+            category: (t.category || 'nutrition') as any,
+            title: t.title,
+            description: t.description,
+            content: t.content,
+            duration: t.duration,
+            completed: t.completed || false,
+            favorite: t.is_favorite || false,
+            streak: t.streak || 0,
+          })));
+        }
+      } catch (err) {
+        console.error('Failed to load tips:', err);
+        setError('Failed to load tips');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadTips();
+  }, []);
+
+  // Toggle complete status
+  const toggleComplete = async (id: string) => {
+    try {
+      await gyaanService.markComplete(id);
+      setTips(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    } catch (err) {
+      console.error('Failed to mark complete:', err);
+    }
+  };
+
+  // Compute derived values
   const filteredTips = selectedCategory === 'all' ? tips : tips.filter(t => t.category === selectedCategory);
   const completedCount = tips.filter(t => t.completed).length;
-  const completionPct = (completedCount / tips.length) * 100;
+  const completionPct = tips.length > 0 ? (completedCount / tips.length) * 100 : 0;
   const favCount = tips.filter(t => t.favorite).length;
-
-  const toggleComplete = (id: string) =>
-    setTips(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-  const toggleFavorite = (id: string) =>
-    setTips(prev => prev.map(t => t.id === id ? { ...t, favorite: !t.favorite } : t));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
@@ -187,6 +202,23 @@ const GyaanCorner = () => {
           </div>
         </div>
 
+        {/* ── Error display ──────────────────────────────────────────────── */}
+        {error && (
+          <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* ── Loading state ──────────────────────────────────────────────– */}
+        {isLoading ? (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="py-8 flex flex-col items-center gap-3">
+              <Loader className="h-6 w-6 text-primary animate-spin" />
+              <p className="text-sm text-muted-foreground">Loading tips...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
         {/* ── Section heading ────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
@@ -348,6 +380,8 @@ const GyaanCorner = () => {
             </div>
           </div>
         </Card>
+          </>
+        )}
 
         {/* bottom spacing */}
         <div className="h-2" />

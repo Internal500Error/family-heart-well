@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Menu, User, Users, Heart, LocateIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUserMode } from '@/hooks/useUserMode';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { communityService } from '@/lib/api-client';
 
 export const TopHeader: React.FC = () => {
   const currentHour = new Date().getHours();
@@ -14,6 +15,49 @@ export const TopHeader: React.FC = () => {
 
   const isChildDashboard = location.pathname.includes('/child-dashboard');
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthPage && !isChildDashboard) {
+      loadNotifications();
+    }
+  }, [isAuthPage, isChildDashboard, location.pathname]);
+
+  const loadNotifications = async () => {
+    try {
+      const response = await communityService.getNotifications();
+      const responseData = response.data as any;
+      const data = responseData?.results || responseData || [];
+      if (Array.isArray(data)) {
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.is_read).length);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const markAsRead = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await communityService.markNotificationRead(id);
+      loadNotifications();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await communityService.markAllNotificationsRead();
+      loadNotifications();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   if (isAuthPage) return null;
 
   return (
@@ -49,21 +93,30 @@ export const TopHeader: React.FC = () => {
               </Button>
             </NavLink>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 relative hover:bg-accent/50"
-              onClick={() => isChildDashboard && navigate('/child-dashboard/location')}
-            >
-              {isChildDashboard ? (
+            {isChildDashboard ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 relative hover:bg-accent/50"
+                onClick={() => navigate('/child-dashboard/location')}
+              >
                 <LocateIcon className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <>
-                  <Bell className="h-5 w-5 text-muted-foreground" />
-                  <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-gradient-primary rounded-full border border-white animate-pulse-soft" />
-                </>
-              )}
-            </Button>
+              </Button>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 relative hover:bg-accent/50"
+                onClick={() => navigate('/notifications')}
+              >
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <div className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-primary text-[10px] font-bold text-white border border-white animate-pulse-soft">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </div>
+                )}
+              </Button>
+            )}
 
             <NavLink to="/profile">
               <Button variant="ghost" size="sm" className="p-2 hover:bg-accent/50">

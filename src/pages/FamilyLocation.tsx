@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MapPin, Navigation, RefreshCw, Phone, Heart,
   Activity, Footprints, ChevronDown, Wifi, WifiOff,
-  Shield, Clock, ChevronLeft
+  Shield, Clock, ChevronLeft, Loader
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { locationService, familyService } from '@/lib/api-client';
 
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -30,6 +31,18 @@ interface FamilyMemberLocation {
   };
 }
 
+interface FamilyLiveLocationResponse {
+  parent_id: number;
+  parent_name: string;
+  relationship: string;
+  latitude: number | string;
+  longitude: number | string;
+  speed_kmh: number | null;
+  battery_level: number | null;
+  recorded_at: string;
+  is_live: boolean;
+}
+
 
 
 // ─── Relationship helpers ──────────────────────────────────────────────────────
@@ -45,45 +58,30 @@ const RELATIONSHIP_META: Record<Relationship, { emoji: string; color: string; ac
 const getMeta = (rel: Relationship) => RELATIONSHIP_META[rel] ?? RELATIONSHIP_META.guardian;
 
 
-// ─── Seeded random — gives stable positions per id ────────────────────────────
-const seededRandom = (seed: string) => {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
-  const rand = () => { h ^= h >>> 13; h = Math.imul(h, 1540483477); h ^= h >>> 15; return ((h >>> 0) / 0xFFFFFFFF); };
-  return rand;
+const normalizeRelationship = (value: string): Relationship => {
+  const rel = value.toLowerCase();
+  if (rel.includes('mother')) return 'mother';
+  if (rel.includes('father')) return 'father';
+  if (rel.includes('brother')) return 'brother';
+  if (rel.includes('sister')) return 'sister';
+  if (rel.includes('grand')) return 'grandpa';
+  return 'guardian';
 };
 
-// ─── Generate mock location for a parent ──────────────────────────────────────
-// Base: Mumbai (19.076, 72.877). Scatter ±0.05 degrees (~5km radius)
-const mockLocation = (id: string, name: string, relationship: Relationship): FamilyMemberLocation => {
-  const rand = seededRandom(id);
-  const lat = 19.076 + (rand() - 0.5) * 0.10;
-  const lng = 72.877 + (rand() - 0.5) * 0.10;
-  const addresses = [
-    'Near Bandra Station', 'Juhu Beach Road', 'Andheri West Market',
-    'Powai Lake View', 'Kurla Complex', 'Dadar TT Circle',
-  ];
-  return {
-    id, name, relationship, lat, lng,
-    lastSeen: new Date().toISOString(),
-    isLive: rand() > 0.2,
-    batteryLevel: Math.floor(rand() * 80 + 20),
-    speed: Math.floor(rand() * 20),
-    address: addresses[Math.floor(rand() * addresses.length)],
-    healthStats: {
-      bloodPressure: { systolic: Math.floor(rand() * 40 + 110), diastolic: Math.floor(rand() * 20 + 70) },
-      stepsToday: Math.floor(rand() * 8000 + 1000),
-    },
-  };
-};
-
-// ─── Simulate small drift for "live" feel ─────────────────────────────────────
-const drift = (member: FamilyMemberLocation): FamilyMemberLocation => ({
-  ...member,
-  lat: member.lat + (Math.random() - 0.5) * 0.0005,
-  lng: member.lng + (Math.random() - 0.5) * 0.0005,
-  lastSeen: new Date().toISOString(),
-  speed: Math.max(0, (member.speed ?? 0) + Math.floor((Math.random() - 0.5) * 4)),
+const mapLiveLocation = (item: FamilyLiveLocationResponse): FamilyMemberLocation => ({
+  id: String(item.parent_id),
+  name: item.parent_name,
+  relationship: normalizeRelationship(item.relationship),
+  lat: Number(item.latitude),
+  lng: Number(item.longitude),
+  lastSeen: item.recorded_at,
+  isLive: item.is_live,
+  batteryLevel: item.battery_level ?? 0,
+  speed: Math.max(0, Math.round(item.speed_kmh ?? 0)),
+  address: 'Live location shared',
+  healthStats: {
+    stepsToday: 0,
+  },
 });
 
 // ─── Relative time formatter ──────────────────────────────────────────────────
@@ -247,28 +245,33 @@ interface FamilyLocationProps {
   linkedParents?: Array<{ id: string; name: string; relationship: Relationship }>;
 }
 
-// Default demo members shown when no parents are linked yet
-const DEMO_PARENTS: Array<{ id: string; name: string; relationship: Relationship }> = [
-  { id: 'demo-1', name: 'Sunita Kumar', relationship: 'mother' },
-  { id: 'demo-2', name: 'Rajesh Kumar', relationship: 'father' },
-  { id: 'demo-3', name: 'Priya Kumar',  relationship: 'sister' },
-];
-
 const FamilyLocation: React.FC<FamilyLocationProps> = ({ linkedParents }) => {
-  const parents = linkedParents && linkedParents.length > 0 ? linkedParents : DEMO_PARENTS;
-
   const mapRef = useRef<HTMLDivElement>(null);
   const leafletMap = useRef<any>(null);
   const markersRef = useRef<Record<string, any>>({});
   const leafletRef = useRef<any>(null);
 
-  const [members, setMembers] = useState<FamilyMemberLocation[]>(() =>
-    parents.map((p) => mockLocation(p.id, p.name, p.relationship))
-  );
+  const [members, setMembers] = useState<FamilyMemberLocation[]>([]);
   const [selected, setSelected] = useState<FamilyMemberLocation | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+
+  const fetchLiveLocations = useCallback(async () => {
+    try {
+      const response = await locationService.getFamilyLiveLocations();
+      if (response.error) {
+        console.error('[FamilyLocation] API error:', response.error);
+        return;
+      }
+
+      const payload = Array.isArray(response.data) ? response.data : [];
+      setMembers(payload.map(mapLiveLocation));
+      setLastRefresh(new Date());
+    } catch (error) {
+      console.error('[FamilyLocation] fetch live locations failed:', error);
+    }
+  }, []);
 
   // ── Load Leaflet dynamically ────────────────────────────────────────────────
   useEffect(() => {
@@ -318,6 +321,17 @@ const FamilyLocation: React.FC<FamilyLocationProps> = ({ linkedParents }) => {
     setMapReady(true);
   }, []);
 
+  useEffect(() => {
+    fetchLiveLocations();
+  }, [fetchLiveLocations]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchLiveLocations();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [fetchLiveLocations]);
+
   // ── Place / update markers when map is ready or members change ─────────────
   useEffect(() => {
     if (!mapReady || !leafletMap.current) return;
@@ -347,6 +361,13 @@ const FamilyLocation: React.FC<FamilyLocationProps> = ({ linkedParents }) => {
       }
     });
 
+    Object.keys(markersRef.current).forEach((id) => {
+      if (!members.some((m) => m.id === id)) {
+        leafletMap.current.removeLayer(markersRef.current[id]);
+        delete markersRef.current[id];
+      }
+    });
+
     // Fit bounds to show all members
     if (Object.keys(markersRef.current).length > 0) {
       const group = L.featureGroup(Object.values(markersRef.current));
@@ -354,31 +375,23 @@ const FamilyLocation: React.FC<FamilyLocationProps> = ({ linkedParents }) => {
     }
   }, [mapReady, members]);
 
-  // ── Keep selected member in sync after drift ───────────────────────────────
+  // ── Keep selected member in sync after data refresh ────────────────────────
   useEffect(() => {
     if (selected) {
       const updated = members.find((m) => m.id === selected.id);
-      if (updated) setSelected(updated);
+      if (updated) {
+        setSelected(updated);
+      } else {
+        setSelected(null);
+      }
     }
   }, [members]);
 
-  // ── Live drift every 5 seconds ─────────────────────────────────────────────
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMembers((prev) => prev.map((m) => (m.isLive ? drift(m) : m)));
-      setLastRefresh(new Date());
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   // ── Manual refresh ─────────────────────────────────────────────────────────
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      setMembers((prev) => prev.map(drift));
-      setLastRefresh(new Date());
-      setIsRefreshing(false);
-    }, 800);
+    await fetchLiveLocations();
+    setIsRefreshing(false);
   };
 
   // ── Center map on a member ─────────────────────────────────────────────────

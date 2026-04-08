@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Stethoscope, Plus, Calendar, FileText, Phone,
   MapPin, Clock, Upload, Download, Share2,
@@ -13,6 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { doctorService } from '@/lib/api-client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Doctor {
@@ -62,41 +63,86 @@ const SectionHead = ({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const DoctorSection = () => {
-  const [doctors, setDoctors] = useState<Doctor[]>([
-    { id: '1', name: 'Dr. Rajesh Sharma', specialty: 'General Physician', phone: '+91 98765 43210', address: 'City Hospital, Main Road', isPrimary: true },
-    { id: '2', name: 'Dr. Priya Patel', specialty: 'Cardiologist', phone: '+91 98765 43211', address: 'Heart Care Center', isPrimary: false },
-  ]);
-
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    { id: '1', doctorId: '1', date: '2024-07-15', time: '10:00', reason: 'Regular checkup', status: 'upcoming' },
-    { id: '2', doctorId: '2', date: '2024-07-20', time: '14:30', reason: 'Blood pressure follow-up', status: 'upcoming' },
-  ]);
-
-  const [documents, setDocuments] = useState<Doc[]>([
-    { id: '1', name: 'Blood Test Report', type: 'report', date: '2024-07-10', doctorId: '1' },
-    { id: '2', name: 'Prescription - Atorvastatin', type: 'prescription', date: '2024-07-08', doctorId: '2' },
-  ]);
-
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [documents, setDocuments] = useState<Doc[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
   const [newDoctor, setNewDoctor] = useState({ name: '', specialty: '', phone: '', address: '' });
   const [newAppt, setNewAppt] = useState({ doctorId: '', date: '', time: '', reason: '' });
   const [showDoctorDialog, setShowDoctorDialog] = useState(false);
   const [showApptDialog, setShowApptDialog] = useState(false);
 
+  useEffect(() => {
+    loadDoctorData();
+  }, []);
+
+  const loadDoctorData = async () => {
+    try {
+      setIsLoading(true);
+      const [doctorsRes, appointmentsRes, docsRes] = await Promise.all([
+        doctorService.getDoctors(),
+        doctorService.getAppointments(),
+        doctorService.getDocuments(),
+      ]);
+      
+      if (doctorsRes.data) setDoctors(doctorsRes.data.map((d: any, i: number) => ({ ...d, id: d.id?.toString(), isPrimary: i === 0 })));
+      if (appointmentsRes.data) setAppointments(appointmentsRes.data.map((a: any) => ({ ...a, id: a.id?.toString() })));
+      if (docsRes.data) setDocuments(docsRes.data.map((d: any) => ({ ...d, id: d.id?.toString() })));
+      setError('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to load doctor data');
+      console.error('Error loading doctors:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getDoctorName = (id: string) => doctors.find(d => d.id === id)?.name ?? 'Unknown Doctor';
 
-  const addDoctor = () => {
+  const addDoctor = async () => {
     if (!newDoctor.name || !newDoctor.specialty || !newDoctor.phone) return;
-    setDoctors(prev => [...prev, { id: Date.now().toString(), ...newDoctor, isPrimary: prev.length === 0 }]);
-    setNewDoctor({ name: '', specialty: '', phone: '', address: '' });
-    setShowDoctorDialog(false);
+    try {
+      setIsSaving(true);
+      await doctorService.addDoctor(newDoctor);
+      setNewDoctor({ name: '', specialty: '', phone: '', address: '' });
+      setShowDoctorDialog(false);
+      await loadDoctorData();
+    } catch (err: any) {
+      setError(err.message || 'Failed to add doctor');
+      console.error('Error adding doctor:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const addAppointment = () => {
+  const addAppointment = async () => {
     if (!newAppt.doctorId || !newAppt.date || !newAppt.time) return;
-    setAppointments(prev => [...prev, { id: Date.now().toString(), ...newAppt, status: 'upcoming' }]);
-    setNewAppt({ doctorId: '', date: '', time: '', reason: '' });
-    setShowApptDialog(false);
+    try {
+      setIsSaving(true);
+      await doctorService.addAppointment(newAppt);
+      setNewAppt({ doctorId: '', date: '', time: '', reason: '' });
+      setShowApptDialog(false);
+      await loadDoctorData();
+    } catch (err: any) {
+      setError(err.message || 'Failed to add appointment');
+      console.error('Error adding appointment:', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading doctor data...</p>
+        </div>
+      </div>
+    );
+  }
 
   const upcoming = appointments.filter(a => a.status === 'upcoming');
   const recentDocs = documents.slice(0, 3);
@@ -104,6 +150,12 @@ const DoctorSection = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+
+        {error && (
+          <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* ── Hero header ─────────────────────────────────────────── */}
         <div

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Activity, Heart, Droplets, Weight, Plus,
   TrendingUp, FileDown, Share2, Sparkles, Clock,
@@ -15,6 +15,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
+import { healthService } from '@/lib/api-client';
 
 interface HealthReading {
   id: string;
@@ -54,47 +55,128 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 };
 
 const HealthTracker = () => {
-  const [readings, setReadings] = useState<HealthReading[]>([
-    { id: '1', type: 'bp', value: '120/80', date: '2024-07-11', time: '09:00', status: 'normal' },
-    { id: '2', type: 'sugar', value: '95', date: '2024-07-11', time: '08:30', status: 'normal' },
-    { id: '3', type: 'weight', value: '72.5', date: '2024-07-11', time: '07:00', status: 'normal' },
-  ]);
-
+  const [readings, setReadings] = useState<HealthReading[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedType, setSelectedType] = useState<'bp' | 'sugar' | 'weight' | 'heartRate'>('bp');
   const [newReading, setNewReading] = useState({
-    type: '', value: '',
+    type: 'bp',
+    value: '',
     date: new Date().toISOString().split('T')[0],
     time: new Date().toTimeString().slice(0, 5),
   });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const addReading = () => {
-    if (!newReading.type || !newReading.value) return;
-    setReadings(prev => [{
-      id: Date.now().toString(),
-      type: newReading.type as any,
-      value: newReading.value,
-      date: newReading.date,
-      time: newReading.time,
-      status: 'normal',
-    }, ...prev]);
-    setNewReading({ type: '', value: '', date: new Date().toISOString().split('T')[0], time: new Date().toTimeString().slice(0, 5) });
-    setDialogOpen(false);
+  // Helper: Get latest reading of a specific type
+  const latest = (type: string) => {
+    return readings.find(r => r.type === type);
   };
 
-  const chartData = [
-    { date: '07-07', bp: 125, sugar: 98, weight: 73.0 },
-    { date: '07-08', bp: 122, sugar: 95, weight: 72.8 },
-    { date: '07-09', bp: 118, sugar: 92, weight: 72.6 },
-    { date: '07-10', bp: 120, sugar: 96, weight: 72.4 },
-    { date: '07-11', bp: 120, sugar: 95, weight: 72.5 },
-  ];
+  // Helper: Prepare chart data from readings
+  const chartData = readings.slice(0, 5).reverse().map((reading, idx) => ({
+    date: reading.date,
+    bp: reading.type === 'bp' ? parseInt(reading.value.split('/')[0]) : null,
+    sugar: reading.type === 'sugar' ? parseFloat(reading.value) : null,
+  })).filter(d => d.bp !== null || d.sugar !== null);
 
-  // Latest reading per type
-  const latest = (type: string) => readings.find(r => r.type === type);
+  useEffect(() => {
+    fetchReadings();
+  }, [selectedType]);
+
+  const fetchReadings = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await healthService.getHealthReadings({
+        type: selectedType,
+        limit: '50'
+      });
+      if (response.error) {
+        setError(response.error);
+        setReadings([]);
+      } else {
+        // Handle both array and paginated response formats
+        let data = response.data;
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          // If it's a paginated response with results property
+          data = (data as any).results || [];
+        }
+        setReadings(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      setError('Failed to load health readings');
+      console.error('Fetch error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addReading = async () => {
+    if (!newReading.value.trim()) {
+      setError('Please enter a value');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+    try {
+      const response = await healthService.addHealthReading({
+        type: newReading.type,
+        value: newReading.value,
+        recorded_at: `${newReading.date}T${newReading.time}:00Z`,
+      });
+      if (response.error) {
+        setError(response.error);
+      } else {
+        setNewReading({
+          type: 'bp',
+          value: '',
+          date: new Date().toISOString().split('T')[0],
+          time: new Date().toTimeString().slice(0, 5),
+        });
+        setDialogOpen(false);
+        fetchReadings();
+      }
+    } catch (err) {
+      setError('Failed to add reading');
+      console.error('Add error:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/20 via-white to-accent/20">
       <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+
+        {/* ── Error Banner ───────────────────────────────────────────── */}
+        {error && (
+          <div className="rounded-2xl bg-red-50 border border-red-200 px-4 py-3">
+            <div className="flex items-start gap-3">
+              <div className="w-5 h-5 rounded-full bg-red-200 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-red-700 text-xs font-bold">!</span>
+              </div>
+              <p className="text-sm text-red-700 flex-1">{error}</p>
+              <button 
+                onClick={() => setError('')}
+                className="text-red-400 hover:text-red-600 font-bold text-lg leading-none shrink-0"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Loading Indicator ──────────────────────────────────────── */}
+        {isLoading && (
+          <Card className="border-0 shadow-sm">
+            <CardContent className="py-8 flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <p className="text-sm text-muted-foreground">Loading health data...</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* ── Hero header ───────────────────────────────────────────── */}
         <div

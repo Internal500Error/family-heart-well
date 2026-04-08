@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, User, Phone, Mail, MapPin, Calendar, ShieldAlert, Lock, ArrowRight, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { authService } from '@/lib/api-client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SignupForm {
@@ -102,10 +104,13 @@ const ProgressBar = ({ step }: { step: 'form' | 'otp' | 'success' }) => {
 
 // ─── Main Signup Component ─────────────────────────────────────────────────────
 const Signup = () => {
+    const navigate = useNavigate();
     const [step, setStep] = useState<Step>('splash');
     const [errors, setErrors] = useState<Partial<SignupForm>>({});
     const [otpValue, setOtpValue] = useState(['', '', '', '']);
     const [otpError, setOtpError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiError, setApiError] = useState('');
     const [form, setForm] = useState<SignupForm>({
         name: '', dob: '', phone: '', email: '',
         address: '', emergencyContact: '', password: '', otp: ''
@@ -120,24 +125,40 @@ const Signup = () => {
     const update = (field: keyof SignupForm, value: string) => {
         setForm(prev => ({ ...prev, [field]: value }));
         if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
+        setApiError('');
     };
 
     const validate = (): boolean => {
         const newErrors: Partial<SignupForm> = {};
-        // if (!form.name.trim()) newErrors.name = 'Full name is required';
-        // if (!form.dob) newErrors.dob = 'Date of birth is required';
-        // if (!/^\+?[0-9]{10,13}$/.test(form.phone.replace(/\s/g, '')))
-        //   newErrors.phone = 'Enter a valid phone number';
-        // if (form.email && !/\S+@\S+\.\S+/.test(form.email))
-        //   newErrors.email = 'Enter a valid email';
-        // if (!form.emergencyContact.trim()) newErrors.emergencyContact = 'Emergency contact is required';
-        // if (form.password.length < 6) newErrors.password = 'Minimum 6 characters';
-        // setErrors(newErrors);
+        if (!form.name.trim()) newErrors.name = 'Full name is required';
+        if (!form.email.trim()) newErrors.email = 'Email is required';
+        if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Enter a valid email';
+        if (!form.password.trim()) newErrors.password = 'Password is required';
+        if (form.password.length < 6) newErrors.password = 'Minimum 6 characters';
+        setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleFormSubmit = () => {
-        if (validate()) setStep('otp');
+    const handleFormSubmit = async () => {
+        if (!validate()) return;
+        
+        setIsLoading(true);
+        setApiError('');
+        
+        try {
+            const response = await authService.register(form.email, form.password, form.name);
+            if (response.error) {
+                setApiError(response.error);
+                return;
+            }
+            // Skip OTP for now and go straight to success
+            setStep('success');
+        } catch (error) {
+            setApiError('An unexpected error occurred. Please try again.');
+            console.error('Registration error:', error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleOtpChange = (i: number, val: string) => {
@@ -163,7 +184,11 @@ const Signup = () => {
     };
 
     const handleLoginRedirect = () => {
-        window.location.href = '/login';
+        navigate('/login');
+    };
+    
+    const handleSuccessRedirect = () => {
+        navigate('/');
     };
 
     // ── Splash ──
@@ -181,7 +206,7 @@ const Signup = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">You're all set!</h2>
                     <p className="text-gray-500 mb-8">Account created successfully.<br />Welcome to the DilCare family 💖</p>
                     <Button
-                        onClick={() => window.location.href = '/'}
+                        onClick={handleSuccessRedirect}
                         style={{ background: 'linear-gradient(135deg, #646cffaa, #5915a7)' }}
                     >
                         Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
@@ -218,32 +243,21 @@ const Signup = () => {
                         {/* ── FORM STEP ── */}
                         {step === 'form' && (
                             <div className="space-y-4">
-                                <h2 className="text-xl font-bold text-gray-800 mb-4">Personal Details</h2>
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">Create Your Account</h2>
+
+                                {apiError && (
+                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                                        {apiError}
+                                    </div>
+                                )}
 
                                 <Field label="Full Name *" icon={User} placeholder="Rajesh Kumar"
                                     value={form.name} onChange={e => update('name', e.target.value)}
                                     error={errors.name} />
 
-                                <Field label="Date of Birth *" icon={Calendar} type="date"
-                                    value={form.dob} onChange={e => update('dob', e.target.value)}
-                                    error={errors.dob} />
-
-                                <Field label="Phone Number *" icon={Phone} placeholder="+91 98765 43210"
-                                    type="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
-                                    error={errors.phone} />
-
-                                <Field label="Email Address" icon={Mail} placeholder="you@email.com"
+                                <Field label="Email Address *" icon={Mail} placeholder="you@email.com"
                                     type="email" value={form.email} onChange={e => update('email', e.target.value)}
                                     error={errors.email} />
-
-                                <Field label="Home Address *" icon={MapPin} placeholder="B-123, Green Valley, Mumbai"
-                                    value={form.address} onChange={e => update('address', e.target.value)}
-                                    error={errors.address} />
-
-                                <Field label="Emergency Contact *" icon={ShieldAlert} placeholder="+91 98765 43211"
-                                    type="tel" value={form.emergencyContact}
-                                    onChange={e => update('emergencyContact', e.target.value)}
-                                    error={errors.emergencyContact} />
 
                                 <Field label="Password *" icon={Lock} placeholder="Min. 6 characters"
                                     type="password" value={form.password}
@@ -251,9 +265,10 @@ const Signup = () => {
                                     error={errors.password} />
 
                                 <Button onClick={handleFormSubmit}
+                                    disabled={isLoading}
                                     className="w-full h-12 rounded-xl text-base font-semibold border-0 mt-2"
                                     style={{ background: 'linear-gradient(135deg, #646cffaa, #5915a7)' }}>
-                                    Send OTP <ArrowRight className="ml-2 h-4 w-4" />
+                                    {isLoading ? 'Creating Account...' : 'Create Account'} <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
 
                                 <p className="text-center text-sm text-gray-500 pt-1">
