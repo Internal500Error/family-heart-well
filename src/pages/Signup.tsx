@@ -184,11 +184,11 @@ const Signup = () => {
     };
 
     const handleLoginRedirect = () => {
-        navigate('/login');
+        navigate('/');
     };
     
     const handleSuccessRedirect = () => {
-        navigate('/');
+        navigate('/index');
     };
 
     // ── Splash ──

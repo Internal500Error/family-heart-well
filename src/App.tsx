@@ -36,9 +36,9 @@ const App = () => (
         <BrowserRouter>
           <DilCareLayout>
             <Routes>
-              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/" element={<Index />} />
+              <Route path="/index" element={<Index />} />
               <Route path="/child-dashboard/location" element={<FamilyLocation />} />
               <Route path="/medicine" element={<MedicineReminder />} />
               <Route path="/health" element={<HealthTracker />} />

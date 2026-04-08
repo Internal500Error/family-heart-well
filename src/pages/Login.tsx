@@ -67,7 +67,7 @@ const Login = () => {
       } else if (response.data) {
         // Login successful - tokens are stored by authService
         // Redirect to home
-        window.location.href = '/';
+        window.location.href = '/index';
       }
     } catch (err: any) {
       setApiError(err.message || 'Login failed. Please try again.');
