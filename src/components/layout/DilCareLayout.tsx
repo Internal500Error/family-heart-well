@@ -13,8 +13,8 @@ export const DilCareLayout: React.FC<DilCareLayoutProps> = ({ children }) => {
       <TopHeader />
       
       {/* Main content area with premium spacing */}
-      <main className="flex-1 pb-24 overflow-y-auto">
-        <div className="container mx-auto px-6 py-8 max-w-md animate-fade-in">
+      <main className="flex-1">
+        <div className="container mx-auto max-w-md animate-fade-in">
           {children}
         </div>
       </main>

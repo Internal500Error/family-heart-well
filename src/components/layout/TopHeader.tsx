@@ -61,7 +61,7 @@ export const TopHeader: React.FC = () => {
   if (isAuthPage) return null;
 
   return (
-    <header className="topbar fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+    <header className="sticky fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
       <div className="container mx-auto px-6 py-4 max-w-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -71,7 +71,7 @@ export const TopHeader: React.FC = () => {
                 <span className="leading-tight">DilCare</span>
               </h1>
               <p className="text-xs text-muted-foreground font-medium">
-                Tagline
+                Care Without Borders
               </p>
             </div>
           </div>
