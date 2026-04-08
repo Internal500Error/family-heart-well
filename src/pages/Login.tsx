@@ -72,7 +72,7 @@ const Login = () => {
   const handleOtpVerify = () => {
     const entered = otpValue.join('');
     if (entered === DEFAULT_OTP) {
-      window.location.href = '/';
+      window.location.href = '/index';
     } else {
       setOtpError('Invalid OTP. Please try again.');
       setOtpValue(['', '', '', '']);
