@@ -24,6 +24,11 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import { UserModeProvider } from "@/hooks/useUserMode";
 import FamilyLocation from "./pages/FamilyLocation";
+import CommunityLeaderboardPage from "./pages/community/CommunityLeaderboardPage";
+import CommunityGroupsPage from "./pages/community/CommunityGroupsPage";
+import CommunityMyGroupPage from "./pages/community/CommunityMyGroupPage";
+import CommunityChallengesPage from "./pages/community/CommunityChallengesPage";
+import CommunityFeedPage from "./pages/community/CommunityFeedPage";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +56,12 @@ const App = () => (
               <Route path="/doctor" element={<DoctorSection />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/community/leaderboard" element={<CommunityLeaderboardPage />} />
+              <Route path="/community/groups" element={<CommunityGroupsPage />} />
+              <Route path="/community/my-group" element={<CommunityMyGroupPage />} />
+              <Route path="/community/my-group/:groupId" element={<CommunityMyGroupPage />} />
+              <Route path="/community/challenges" element={<CommunityChallengesPage />} />
+              <Route path="/community/feed" element={<CommunityFeedPage />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/child-dashboard" element={<ChildDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

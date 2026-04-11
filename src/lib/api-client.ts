@@ -591,6 +591,14 @@ export const gyaanService = {
 // ════════════════════════════════════════════════════════════════════
 // COMMUNITY SERVICE
 // ════════════════════════════════════════════════════════════════════
+const NOTIFICATIONS_CACHE_TTL_MS = 30_000;
+let notificationsCache: { data: any[]; fetchedAt: number } | null = null;
+let notificationsInFlight: Promise<ApiResponse<any[]>> | null = null;
+
+const clearNotificationsCache = () => {
+  notificationsCache = null;
+};
+
 export const communityService = {
   getLeaderboard: (params?: Record<string, string | number>) => {
     let endpoint = '/community/leaderboard/';
@@ -620,14 +628,40 @@ export const communityService = {
   getGroupMembers: (id: string) =>
     apiCall<any[]>(`/community/groups/${id}/members/`),
 
+  updateGroupMemberRole: (groupId: string, memberId: string, role: 'admin' | 'moderator' | 'member') =>
+    apiCall<any>(`/community/groups/${groupId}/roles/`, {
+      method: 'POST',
+      body: { member_id: memberId, role },
+    }),
+
+  removeGroupMember: (groupId: string, memberId: string) =>
+    apiCall<any>(`/community/groups/${groupId}/members/${memberId}/remove/`, {
+      method: 'POST',
+      body: {},
+    }),
+
   joinGroup: (groupId: string) =>
     apiCall<any>('/community/groups/join/', { method: 'POST', body: { group_id: groupId } }),
+
+  joinGroupByInvite: (inviteCode: string) =>
+    apiCall<any>('/community/groups/join/', { method: 'POST', body: { invite_code: inviteCode } }),
 
   leaveGroup: (id: string) =>
     apiCall<any>(`/community/groups/${id}/leave/`, { method: 'POST', body: {} }),
 
   // Challenges
-  getChallenges: () => apiCall<any[]>('/community/challenges/'),
+  getChallenges: (params?: Record<string, string | number>) => {
+    let endpoint = '/community/challenges/';
+    if (params) {
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        queryParams.append(key, String(value));
+      });
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return apiCall<any[]>(endpoint);
+  },
 
   addChallenge: (challenge: Record<string, unknown>) =>
     apiCall<any>('/community/challenges/', { method: 'POST', body: challenge }),
@@ -651,15 +685,117 @@ export const communityService = {
     apiCall<any>(`/community/challenges/${id}/refresh/`, { method: 'POST', body: {} }),
 
   // Notifications
-  getNotifications: () => apiCall<any[]>('/community/notifications/'),
+  getNotifications: (forceRefresh = false) => {
+    const now = Date.now();
+    if (!forceRefresh && notificationsCache && now - notificationsCache.fetchedAt < NOTIFICATIONS_CACHE_TTL_MS) {
+      return Promise.resolve({ data: notificationsCache.data, error: null, status: 200 });
+    }
+
+    if (!forceRefresh && notificationsInFlight) {
+      return notificationsInFlight;
+    }
+
+    notificationsInFlight = apiCall<any[]>('/community/notifications/')
+      .then((response) => {
+        if (!response.error && response.data) {
+          const payload = response.data as any;
+          const data = Array.isArray(payload)
+            ? payload
+            : (payload as { results?: any[] })?.results ?? [];
+          notificationsCache = {
+            data: Array.isArray(data) ? data : [],
+            fetchedAt: Date.now(),
+          };
+        }
+        return response;
+      })
+      .finally(() => {
+        notificationsInFlight = null;
+      });
+
+    return notificationsInFlight;
+  },
 
   markNotificationRead: (id: string) =>
-    apiCall<any>(`/community/notifications/${id}/read/`, { method: 'POST', body: {} }),
+    apiCall<any>(`/community/notifications/${id}/read/`, { method: 'POST', body: {} }).then((response) => {
+      if (!response.error) clearNotificationsCache();
+      return response;
+    }),
 
   markAllNotificationsRead: () =>
-    apiCall<any>('/community/notifications/read-all/', { method: 'POST', body: {} }),
+    apiCall<any>('/community/notifications/read-all/', { method: 'POST', body: {} }).then((response) => {
+      if (!response.error) clearNotificationsCache();
+      return response;
+    }),
 
   getUnreadCount: () => apiCall<any>('/community/notifications/unread-count/'),
+
+  // Feed
+  getFeed: (params?: Record<string, string | number>) => {
+    let endpoint = '/community/feed/';
+    if (params) {
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        queryParams.append(key, String(value));
+      });
+      const queryString = queryParams.toString();
+      if (queryString) endpoint += `?${queryString}`;
+    }
+    return apiCall<any[]>(endpoint);
+  },
+
+  addFeedPost: (payload: { content: string; group?: string }) =>
+    apiCall<any>('/community/feed/', { method: 'POST', body: payload }),
+
+  syncMilestones: () =>
+    apiCall<any>('/community/feed/milestones/sync/', { method: 'POST', body: {} }),
+
+  toggleFeedLike: (postId: string) =>
+    apiCall<any>(`/community/feed/${postId}/like/`, { method: 'POST', body: {} }),
+
+  getFeedComments: (postId: string) =>
+    apiCall<any[]>(`/community/feed/${postId}/comments/`),
+
+  addFeedComment: (postId: string, content: string) =>
+    apiCall<any>(`/community/feed/${postId}/comments/`, {
+      method: 'POST',
+      body: { content },
+    }),
+
+  // Group Chat
+  getGroupChat: (groupId: string) =>
+    apiCall<any[]>(`/community/groups/${groupId}/chat/`),
+
+  getGroupChatUnread: () =>
+    apiCall<any[]>('/community/groups/chat/unread/'),
+
+  sendGroupChatMessage: (groupId: string, content: string) =>
+    apiCall<any>(`/community/groups/${groupId}/chat/`, {
+      method: 'POST',
+      body: { content },
+    }),
+
+  // Badges
+  getMyBadges: () => apiCall<any[]>('/community/badges/me/'),
+
+  // Notification preferences
+  getNotificationPreferences: () => apiCall<any>('/community/notifications/preferences/'),
+  updateNotificationPreferences: (payload: Record<string, unknown>) =>
+    apiCall<any>('/community/notifications/preferences/', { method: 'PATCH', body: payload }),
+  getGroupNotificationPreferences: () => apiCall<any[]>('/community/notifications/group-preferences/'),
+  setGroupMute: (groupId: string, isMuted: boolean) =>
+    apiCall<any>('/community/notifications/group-preferences/', {
+      method: 'POST',
+      body: { group: groupId, is_muted: isMuted },
+    }),
+
+  // Moderation
+  getMyModerationReports: () => apiCall<any[]>('/community/moderation/reports/'),
+  createModerationReport: (payload: { target_type: 'post' | 'comment' | 'chat_message'; target_id: string; reason: string }) =>
+    apiCall<any>('/community/moderation/reports/', {
+      method: 'POST',
+      body: payload,
+    }),
 };
 
 // ════════════════════════════════════════════════════════════════════

@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { path: '/medicine', icon: Pill, label: 'Medicine', color: '#6366f1', bg: '#f5f3ff' },
   { path: '/steps', icon: Footprints, label: 'Steps', color: '#f97316', bg: '#fff7ed' },
   { path: '/bmi', icon: Scale, label: 'BMI', color: '#721ba5', bg: '#f0fdf4' },
-  { path: '/community', icon: Users, label: 'Community', color: '#607fed', bg: '#eff6ff' },
+  { path: '/community/leaderboard', icon: Users, label: 'Community', color: '#607fed', bg: '#eff6ff' },
   { path: '/health', icon: Activity, label: 'Health', color: '#16a34a', bg: '#fff1f2' },
   { path: '/gyaan', icon: BookOpen, label: 'Wellness', color: '#607fed', bg: '#eef2ff' },
   { path: '/sos', icon: Shield, label: 'Emergency', color: '#ef4444', bg: '#fef2f2' },
@@ -31,7 +31,12 @@ export const BottomNavigation: React.FC = () => {
   const [activeColor, setActiveColor] = useState(NAV_ITEMS[0].color);
   const [prevIdx, setPrevIdx] = useState(0);
 
-  const activeIdx = NAV_ITEMS.findIndex(n => n.path === location.pathname);
+  const activeIdx = NAV_ITEMS.findIndex((n) => {
+    if (n.path === '/community/leaderboard') {
+      return location.pathname.startsWith('/community');
+    }
+    return n.path === location.pathname;
+  });
   const safeIdx = activeIdx < 0 ? 0 : activeIdx;
 
   // Move sliding pill + scroll active into view
