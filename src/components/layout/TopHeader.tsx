@@ -16,14 +16,13 @@ export const TopHeader: React.FC = () => {
   const isChildDashboard = location.pathname.includes('/child-dashboard');
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (!isAuthPage && !isChildDashboard) {
       loadNotifications();
     }
-  }, [isAuthPage, isChildDashboard, location.pathname]);
+  }, [isAuthPage, isChildDashboard]);
 
   const loadNotifications = async () => {
     try {
@@ -31,7 +30,6 @@ export const TopHeader: React.FC = () => {
       const responseData = response.data as any;
       const data = responseData?.results || responseData || [];
       if (Array.isArray(data)) {
-        setNotifications(data);
         setUnreadCount(data.filter(n => !n.is_read).length);
       }
     } catch (error) {
